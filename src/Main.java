@@ -35,14 +35,6 @@ public class Main {
 
             System.out.println(program);
             pythonVisitor.getSymbolTable().printTable();
-
-            String htmlSymbolTable = pythonVisitor.getSymbolTable().getSymbolTableAsHtml();
-
-            try (PrintWriter out = new PrintWriter("python_symbol_table.html")) {
-                out.println(htmlSymbolTable);
-            }
-            System.out.println("Python symbol table generated to python_symbol_table.html");
-
         }
         else if (chose == 2){
             String source = "test/products.html";
@@ -56,15 +48,6 @@ public class Main {
 
             System.out.println(program);
             htmlVisitor.htmlSymbolTable.printTable();
-
-            // Generate and save HTML symbol table
-            String htmlSymbolTable = htmlVisitor.htmlSymbolTable.getSymbolTableAsHtml();
-            try (PrintWriter out = new PrintWriter("html_symbol_table.html")) {
-                out.println(htmlSymbolTable);
-            }
-            System.out.println("HTML symbol table generated to html_symbol_table.html");
-
-
         }
     }
 }

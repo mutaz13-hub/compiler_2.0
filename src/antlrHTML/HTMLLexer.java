@@ -1,4 +1,4 @@
-// Generated from D:/Study/مواد/مترجمات 1/مشروع/compilerProjectGithub/compiler_project/src/HTMLLexer.g4 by ANTLR 4.13.2
+// Generated from C:/Users/Mutaz13/Desktop/compiler_2.0/compiler_2.0/src/HTMLLexer.g4 by ANTLR 4.13.2
 
 package antlrHTML;
 
