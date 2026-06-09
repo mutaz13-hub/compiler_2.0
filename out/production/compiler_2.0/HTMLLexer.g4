@@ -5,71 +5,50 @@ package antlrHTML;
 channels {
     ERROR
 }
+HTML_COMMENT: '<!--' .*? '-->';
 
-LBRACE     : '{' ;
-RBRACE     : '}' ;
-LPAREN     : '(' ;
-RPAREN     : ')' ;
-LBRACK     : '[' ;
-RBRACK     : ']' ;
-SEMI       : ';' ;
-COLON      : ':' ;
-COMMA      : ',' ;
-DOT        : '.' ;
-EQ         : '=' ;
-PLUS       : '+' ;
-MINUS      : '-' ;
-STAR       : '*' ;
-SLASH      : '/' ;
-PIPE       : '|' ;
-UNDERSCORE : '_' ;
-QUESTION   : '?' ;
-AND        : 'and' ;
-OR         : 'or' ;
-TAG_OPEN   : '<';
-TAG_CLOSE  : '>';
-HASH       : '#' ;
-TILDE      : '~' ;
-TILDE_EQUALS : '~=' ;
-PIPE_EQUALS  : '|=' ;
-CARET_EQUALS : '^=' ;
-DOLLAR_EQUALS : '$=' ;
-STAR_EQUALS  : '*=' ;
-DOUBLE_COLON : '::' ;
-NOT          : 'not' ;
-NUMBER       : '-'? [0-9]+ ( '.' [0-9]+ )? ( [a-z%]+ )?
-             | '-'? '.' [0-9]+ ( [a-z%]+ )? ;
-VAR          : '--' NMSTART NMCHAR* ;
-ID: TAG_NameStartChar TAG_NameChar*;
-WS: (' ' | '\t' | '\r'? '\n')+->skip;
-NEWLINE: '\r\n';
-DOUBLE_QUOTE_STRING: '"' ~[<"]* '"';
-HTML_COMMENT: '<!--' .*? '-->'->skip;
-STYLE_COMMENT      : '/*' .*? '*/' -> skip ;
-IMPORTANT    : '!' [ \t]* 'important' ;
-URL          : 'url' LPAREN ;
-AT_RULE      : '@' (ID | '-')+ ;
-IDENT        : '-'? NMSTART NMCHAR* ;
-VAR_START : '{{' ;
-VAR_END : '}}' ;
-BLOCK_START : '{%' ;
-BLOCK_END : '%}' ;
-COMMENT_START : '{#' ;
-COMMENT_END : '#}' ;
-IF : 'if' ;
-ELIF : 'elif' ;
-ELSE : 'else' ;
-ENDIF : 'endif' ;
-FOR : 'for' ;
-IN : 'in' ;
-ENDFOR : 'endfor' ;
-SET : 'set' ;
-BLOCK : 'block' ;
-ENDBLOCK : 'endblock' ;
-INCLUDE : 'include' ;
-EXTENDS : 'extends' ;
+HTML_CONDITIONAL_COMMENT: '<![' .*? ']>';
 
-//////////////fragment//////////////
+XML: '<?xml' .*? '>';
+
+CDATA: '<![CDATA[' .*? ']]>';
+
+DTD: '<!' .*? '>';
+
+SCRIPTLET: '<?' .*? '?>' | '<%' .*? '%>';
+
+SEA_WS: (' ' | '\t' | '\r'? '\n')+;
+
+SCRIPT_OPEN: '<script' .*? '>' -> pushMode(SCRIPT);
+
+STYLE_OPEN: '<style' .*? '>' -> pushMode(STYLE);
+
+TAG_OPEN: '<' -> pushMode(TAG);
+
+HTML_TEXT: ~'<'+;
+
+// tag declarations
+
+mode TAG;
+
+TAG_CLOSE: '>' -> popMode;
+
+TAG_SLASH_CLOSE: '/>' -> popMode;
+
+TAG_SLASH: '/';
+
+// lexing mode for attribute values
+
+TAG_EQUALS: '=' -> pushMode(ATTVALUE);
+
+TAG_NAME: TAG_NameStartChar TAG_NameChar*;
+
+TAG_WHITESPACE: [ \t\r\n] -> channel(HIDDEN);
+
+fragment HEXDIGIT: [a-fA-F0-9];
+
+fragment DIGIT: [0-9];
+
 fragment TAG_NameChar:
     TAG_NameStartChar
     | '-'
@@ -80,16 +59,49 @@ fragment TAG_NameChar:
     | '\u0300' ..'\u036F'
     | '\u203F' ..'\u2040'
 ;
+
 fragment TAG_NameStartChar:
-    [a-zA-Z]
+    [:a-zA-Z]
     | '\u2070' ..'\u218F'
     | '\u2C00' ..'\u2FEF'
     | '\u3001' ..'\uD7FF'
     | '\uF900' ..'\uFDCF'
     | '\uFDF0' ..'\uFFFD'
 ;
-fragment DIGIT: [0-9];
-fragment IDENT_START : [a-zA-Z_] | [\u0080-\uFFFF] ;
-fragment IDENT_CHAR : [a-zA-Z0-9\-_] | [\u0080-\uFFFF] ;
-fragment NMSTART : IDENT_START | '\\' . ;
-fragment NMCHAR : IDENT_CHAR | '\\' . ;
+
+// <scripts>
+
+mode SCRIPT;
+
+SCRIPT_BODY: .*? '</script>' -> popMode;
+
+SCRIPT_SHORT_BODY: .*? '</>' -> popMode;
+
+// <styles>
+
+mode STYLE;
+
+STYLE_BODY: .*? '</style>' -> popMode;
+
+STYLE_SHORT_BODY: .*? '</>' -> popMode;
+
+// attribute values
+
+mode ATTVALUE;
+
+// an attribute value may have spaces b/t the '=' and the value
+ATTVALUE_VALUE: ' '* ATTRIBUTE -> popMode;
+
+ATTRIBUTE: DOUBLE_QUOTE_STRING | SINGLE_QUOTE_STRING | ATTCHARS | HEXCHARS | DECCHARS;
+
+fragment ATTCHARS: ATTCHAR+ ' '?;
+
+fragment ATTCHAR: '-' | '_' | '.' | '/' | '+' | ',' | '?' | '=' | ':' | ';' | '#' | [0-9a-zA-Z];
+
+fragment HEXCHARS: '#' [0-9a-fA-F]+;
+
+fragment DECCHARS: [0-9]+ '%'?;
+
+fragment DOUBLE_QUOTE_STRING: '"' ~[<"]* '"';
+
+fragment SINGLE_QUOTE_STRING: '\'' ~[<']* '\'';

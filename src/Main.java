@@ -42,12 +42,12 @@ public class Main {
             HTMLLexer lexer = new HTMLLexer(charStream);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             HTMLParser parser = new HTMLParser(tokens);
-            ParseTree tree = parser.root();
+            ParseTree tree = parser.htmlDocument();
             HTMLVisitor htmlVisitor = new HTMLVisitor();
             AST.HTML.Program program = (AST.HTML.Program) htmlVisitor.visit(tree);
 
             System.out.println(program);
-            htmlVisitor.htmlSymbolTable.printTable();
+            htmlVisitor.getSymbolTable().printTable();
         }
     }
 }
