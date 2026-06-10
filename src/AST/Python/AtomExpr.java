@@ -7,6 +7,9 @@ public class AtomExpr extends Expr {
     Atom atom;
     List<Trailer> trailers = new ArrayList<>();
 
+    public Atom getAtom() { return atom; }
+    public List<Trailer> getTrailers() { return trailers; }
+
     public void setAtom(Atom atom) {
         this.atom = atom;
     }

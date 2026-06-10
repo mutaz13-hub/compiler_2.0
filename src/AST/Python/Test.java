@@ -7,6 +7,9 @@ public class Test extends Root {
     ArrayList<Test>test;
     Comparison comparison;
 
+    public List<Test> getTests() { return test; }
+    public Comparison getComparison() { return comparison; }
+
     public Test() {
         this.test = new ArrayList<>();
     }

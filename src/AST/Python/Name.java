@@ -29,6 +29,13 @@ public class Name extends Root {
         this.false_name = false_name;
     }
 
+    public String getRawName() {
+        if (name != null) return name;
+        if (true_name != null) return true_name;
+        if (false_name != null) return false_name;
+        return "";
+    }
+
     @Override
     public String toString(int level) {
         StringBuilder sb = new StringBuilder();

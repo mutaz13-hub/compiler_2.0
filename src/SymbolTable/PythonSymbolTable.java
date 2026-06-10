@@ -23,6 +23,11 @@ public class PythonSymbolTable {
             if(symbols.containsKey(name)) return true;
             return parent != null && parent.resolve(name);
         }
+
+        SymbolInfo lookup(String name) {
+            if (symbols.containsKey(name)) return symbols.get(name);
+            return parent != null ? parent.lookup(name) : null;
+        }
     }
 
     Scope root = new Scope(null, "global");
@@ -42,12 +47,29 @@ public class PythonSymbolTable {
         }
     }
 
-    public void define(String name, String type, String value, int line){
-        current.define(name, new SymbolInfo(type, value, line));
+    public void define(String name, String type, String dataType, String value, int line){
+        current.define(name, new SymbolInfo(type, dataType, value, line));
     }
 
     public boolean exists(String name){
         return current.resolve(name);
+    }
+
+    public boolean existsAnywhere(String name) {
+        return findScopeWithSymbol(root, name) != null;
+    }
+
+    private Scope findScopeWithSymbol(Scope scope, String name) {
+        if (scope.symbols.containsKey(name)) return scope;
+        for (Scope child : scope.children) {
+            Scope found = findScopeWithSymbol(child, name);
+            if (found != null) return found;
+        }
+        return null;
+    }
+
+    public SymbolInfo lookup(String name) {
+        return current.lookup(name);
     }
 
     public void printTable() {

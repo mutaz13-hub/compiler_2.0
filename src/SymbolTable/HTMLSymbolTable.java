@@ -24,6 +24,11 @@ public class HTMLSymbolTable {
             if(symbols.containsKey(name)) return true;
             return parent != null && parent.resolve(name);
         }
+
+        SymbolInfo lookup(String name) {
+            if (symbols.containsKey(name)) return symbols.get(name);
+            return parent != null ? parent.lookup(name) : null;
+        }
     }
 
     Scope root = new Scope(null, "global");
@@ -43,12 +48,16 @@ public class HTMLSymbolTable {
         }
     }
 
-    public void define(String name, String type, String value, int line){
-        current.define(name, new SymbolInfo(type, value, line));
+    public void define(String name, String type, String dataType, String value, int line){
+        current.define(name, new SymbolInfo(type, dataType, value, line));
     }
 
     public boolean exists(String name){
         return current.resolve(name);
+    }
+
+    public SymbolInfo lookup(String name) {
+        return current.lookup(name);
     }
 
     public void printTable() {

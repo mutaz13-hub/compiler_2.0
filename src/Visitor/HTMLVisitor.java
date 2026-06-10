@@ -2,7 +2,6 @@ package Visitor;
 
 import AST.HTML.*;
 import SymbolTable.HTMLSymbolTable;
-import SymbolTable.PythonSymbolTable;
 import antlrHTML.HTMLParser;
 import antlrHTML.HTMLParserBaseVisitor;
 
@@ -10,9 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HTMLVisitor extends HTMLParserBaseVisitor<Program> {
-    private PythonSymbolTable symbolTable = new PythonSymbolTable();
+    private HTMLSymbolTable symbolTable = new HTMLSymbolTable();
 
-    public PythonSymbolTable getSymbolTable() {
+    public HTMLSymbolTable getSymbolTable() {
         return symbolTable;
     }
     @Override
@@ -32,7 +31,9 @@ public class HTMLVisitor extends HTMLParserBaseVisitor<Program> {
             }
         }
         symbolTable.exit();
-        return new HtmlDocumentNode(elements);
+        HtmlDocumentNode node = new HtmlDocumentNode(elements);
+        node.setLine(ctx.getStart().getLine());
+        return node;
     }
 
     @Override
@@ -41,11 +42,15 @@ public class HTMLVisitor extends HTMLParserBaseVisitor<Program> {
 
 
         if (ctx.script() != null) {
-            return visit(ctx.script());
+            Program script = visit(ctx.script());
+            if (script != null) script.setLine(ctx.getStart().getLine());
+            return script;
         }
 
         if (ctx.style() != null) {
-            return visit(ctx.style());
+            Program style = visit(ctx.style());
+            if (style != null) style.setLine(ctx.getStart().getLine());
+            return style;
         }
 
         if (ctx.SCRIPTLET() != null) {
@@ -104,11 +109,13 @@ public class HTMLVisitor extends HTMLParserBaseVisitor<Program> {
             }
         }
         symbolTable.exit();
-        return new TagElementNode(
+        TagElementNode node = new TagElementNode(
                 tagName,
                 attributes,
                 children
         );
+        node.setLine(ctx.getStart().getLine());
+        return node;
     }@Override
     public Program visitHtmlAttribute(HTMLParser.HtmlAttributeContext ctx) {
 
@@ -122,11 +129,14 @@ public class HTMLVisitor extends HTMLParserBaseVisitor<Program> {
             symbolTable.define(
                     name,
                     "ATTRIBUTE",
+                    "string",
                     value,
                     ctx.getStart().getLine());
         }
 
-        return new HtmlAttributeNode(name, value);
+        HtmlAttributeNode node = new HtmlAttributeNode(name, value);
+        node.setLine(ctx.getStart().getLine());
+        return node;
     }
 
     @Override
@@ -140,31 +150,39 @@ public class HTMLVisitor extends HTMLParserBaseVisitor<Program> {
             return null;
         }
 
-        return new TextNode(text);
+        TextNode node = new TextNode(text);
+        node.setLine(ctx.getStart().getLine());
+        return node;
     }
 
     @Override
     public Program visitHtmlComment(
             HTMLParser.HtmlCommentContext ctx) {
 
-        return new CommentNode(
+        CommentNode node = new CommentNode(
                 ctx.getText()
         );
+        node.setLine(ctx.getStart().getLine());
+        return node;
     }
 
     @Override
     public Program visitScript(HTMLParser.ScriptContext ctx) {
 
-        return new ScriptNode(ctx.getText()
+        ScriptNode node = new ScriptNode(ctx.getText()
         );
+        node.setLine(ctx.getStart().getLine());
+        return node;
     }
 
     @Override
     public Program visitStyle(
             HTMLParser.StyleContext ctx) {
 
-        return new StyleNode(
+        StyleNode node = new StyleNode(
                 ctx.getText()
         );
+        node.setLine(ctx.getStart().getLine());
+        return node;
     }
 }

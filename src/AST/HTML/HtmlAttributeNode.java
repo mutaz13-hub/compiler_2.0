@@ -10,6 +10,14 @@ public class HtmlAttributeNode extends Program {
         this.value = value;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
     @Override
     public String toString(int level) {
 

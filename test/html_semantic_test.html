@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title> <!-- EMPTY_TITLE -->
+</head>
+<body>
+    <h1 id="main-title">Welcome</h1>
+    <p id="main-title">Duplicate ID here</p> <!-- DUPLICATE_ID -->
+
+    <img alt="Missing src attribute"> <!-- MISSING_REQUIRED_ATTRIBUTE (src) -->
+    <img src="logo.png"> <!-- MISSING_REQUIRED_ATTRIBUTE (alt) -->
+
+    <a class="btn">Link without href</a> <!-- MISSING_REQUIRED_ATTRIBUTE (href) -->
+
+    <font color="red">Deprecated tag</font> <!-- DEPRECATED_TAG -->
+    <center>Another deprecated tag</center> <!-- DEPRECATED_TAG -->
+
+    <a href="/home">
+        <a href="/about">Invalid nested link</a> <!-- INVALID_NESTING -->
+    </a>
+
+    <ul>
+        <li>Item 1</li>
+        <div>Invalid child of ul</div> <!-- INVALID_NESTING -->
+        <li>Item 2</li>
+    </ul>
+</body>
+</html>

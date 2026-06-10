@@ -8,6 +8,10 @@ public class TextNode extends Program {
         this.text = text;
     }
 
+    public String getText() {
+        return text;
+    }
+
     @Override
     public String toString(int level) {
 

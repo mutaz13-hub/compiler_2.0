@@ -10,6 +10,10 @@ public class AdditiveExpr extends Expr {
     Expr right;
     BinaryOp op;
 
+    public Expr getLeft() { return left; }
+    public Expr getRight() { return right; }
+    public BinaryOp getOp() { return op; }
+
     public void setLeft(Expr left) {
         this.left = left;
     }

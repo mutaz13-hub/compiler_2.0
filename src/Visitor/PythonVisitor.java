@@ -119,7 +119,7 @@ import SymbolTable.PythonSymbolTable;
                         PythonParser.AtomContext atomCtx = ((PythonParser.AtomExprContext) exprCtx).atom();
                         if (atomCtx instanceof PythonParser.NameAtomContext) {
                             String varName = ((PythonParser.NameAtomContext) atomCtx).name().getText();
-                            pythonSymbolTable.define(varName, "variable", varName, ctx.getStart().getLine());
+                            pythonSymbolTable.define(varName, "variable", "unknown", varName, ctx.getStart().getLine());
                         }
                     }
                 }
@@ -161,13 +161,13 @@ import SymbolTable.PythonSymbolTable;
         public Compound_stmt visitFunc_def(PythonParser.Func_defContext ctx) {
             Func_def node = new Func_def();
             String funcName = ctx.name(0).getText();
-            pythonSymbolTable.define(funcName, "function", "function_definition", ctx.getStart().getLine());
+            pythonSymbolTable.define(funcName, "function", "function", "function_definition", ctx.getStart().getLine());
             pythonSymbolTable.enter(funcName);
 
             node.setName((Name) visit(ctx.name(0)));
             for (int i = 1; i < ctx.name().size(); i++) {
                 String paramName = ctx.name(i).getText();
-                pythonSymbolTable.define(paramName, "parameter", paramName, ctx.getStart().getLine());
+                pythonSymbolTable.define(paramName, "parameter", "unknown", paramName, ctx.getStart().getLine());
                 node.addParam((Name) visit(ctx.name(i)));
             }
             if (ctx.ARROW() != null) {
@@ -237,6 +237,7 @@ import SymbolTable.PythonSymbolTable;
         @Override
         public Small_stmt visitExpr_stmt(PythonParser.Expr_stmtContext ctx) {
             Expr_stmt node = new Expr_stmt();
+            node.setLine(ctx.getStart().getLine());
             node.setTest((Test) visit(ctx.test()));
             if (ctx.assign_part() != null) {
                 node.setAssignPart((Assign_part) visit(ctx.assign_part()));
@@ -253,7 +254,7 @@ import SymbolTable.PythonSymbolTable;
                     varValue = varValue.substring(varValue.indexOf("=") + 1).trim();
                 }
 
-                pythonSymbolTable.define(varName, "variable", varValue, ctx.getStart().getLine());
+                pythonSymbolTable.define(varName, "variable", "unknown", varValue, ctx.getStart().getLine());
             }
             return node;
         }
@@ -261,6 +262,7 @@ import SymbolTable.PythonSymbolTable;
         @Override
         public Small_stmt visitReturn_stmt(PythonParser.Return_stmtContext ctx) {
             Return_stmt node = new Return_stmt();
+            node.setLine(ctx.getStart().getLine());
             for (PythonParser.TestContext tctx : ctx.test()) {
                 node.addValue((Test) visit(tctx));
             }
@@ -271,6 +273,7 @@ import SymbolTable.PythonSymbolTable;
         @Override
         public Small_stmt visitImport_stmt(PythonParser.Import_stmtContext ctx) {
             Import_stmt node = new Import_stmt();
+            node.setLine(ctx.getStart().getLine());
             node.setName((Name) visit(ctx.name()));
             return node;
         }
@@ -278,6 +281,7 @@ import SymbolTable.PythonSymbolTable;
         @Override
         public Small_stmt visitFrom_stmt(PythonParser.From_stmtContext ctx) {
             From_stmt node = new From_stmt();
+            node.setLine(ctx.getStart().getLine());
             node.setModule((Name) visit(ctx.name(0)));
             for (int i = 1; i < ctx.name().size(); i++) {
                 node.addImported((Name) visit(ctx.name(i)));
@@ -362,7 +366,7 @@ import SymbolTable.PythonSymbolTable;
                     op = Comparison.CompOp.EQ;
                     String varName = ctx.expr(i-1).getText();
                     String varValue = ctx.expr(i).getText();
-                    pythonSymbolTable.define(varName, "variable", varValue, ctx.getStart().getLine());
+                    pythonSymbolTable.define(varName, "variable", "unknown", varValue, ctx.getStart().getLine());
                 }
                 node.addOp(op);
                 node.addExpr((Expr) visit(ctx.expr(i)));
@@ -396,6 +400,7 @@ import SymbolTable.PythonSymbolTable;
         @Override
         public Atom visitParenAtom(PythonParser.ParenAtomContext ctx) {
             ParenAtom node = new ParenAtom();
+            node.setLine(ctx.getStart().getLine());
             if (ctx.testlist_comp() != null){
                 node.setTestlist_comp((Testlist_comp) visit(ctx.testlist_comp()));
             }
@@ -405,6 +410,7 @@ import SymbolTable.PythonSymbolTable;
         @Override
         public Atom visitListAtom(PythonParser.ListAtomContext ctx) {
             ListAtom node = new ListAtom();
+            node.setLine(ctx.getStart().getLine());
             if (ctx.testlist_comp() != null) {
                 node.setTestlist_comp((Testlist_comp) visit(ctx.testlist_comp()));
             }
@@ -414,18 +420,22 @@ import SymbolTable.PythonSymbolTable;
         @Override
         public Atom visitNameAtom(PythonParser.NameAtomContext ctx) {
             NameAtom node = new NameAtom();
+            node.setLine(ctx.getStart().getLine());
             node.setName((Name) visit(ctx.name()));
             return node;
         }
 
         @Override
         public Atom visitPrintAtom(PythonParser.PrintAtomContext ctx) {
-            return new PrintAtom();
+            PrintAtom node = new PrintAtom();
+            node.setLine(ctx.getStart().getLine());
+            return node;
         }
 
         @Override
         public Atom visitNumberAtom(PythonParser.NumberAtomContext ctx) {
             NumberAtom node = new NumberAtom();
+            node.setLine(ctx.getStart().getLine());
             node.setNumber((Number) visit(ctx.number()));
             if (ctx.MINUS() != null) {
                 node.setNegative(true);
@@ -435,12 +445,15 @@ import SymbolTable.PythonSymbolTable;
 
         @Override
         public Atom visitNoneAtom(PythonParser.NoneAtomContext ctx) {
-            return new NoneAtom();
+            NoneAtom node = new NoneAtom();
+            node.setLine(ctx.getStart().getLine());
+            return node;
         }
 
         @Override
         public Atom visitStringAtom(PythonParser.StringAtomContext ctx) {
             StringAtom node = new StringAtom();
+            node.setLine(ctx.getStart().getLine());
             for (var str : ctx.STRING()) {
                 node.getString().add(str.getText());
             }

@@ -7,6 +7,9 @@ public class Trailer extends AtomExpr{
     Name name;
     ArrayList<Test> test ;
 
+    public Name getName() { return name; }
+    public List<Test> getTests() { return test; }
+
     public Trailer() {
         this.test = new ArrayList<>();
     }

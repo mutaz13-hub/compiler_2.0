@@ -16,6 +16,9 @@ public class Comparison extends Test{
     List<CompOp> ops = new ArrayList<>();
     List<Expr> expr = new ArrayList<>();
 
+    public List<Expr> getExprs() { return expr; }
+    public List<CompOp> getOps() { return ops; }
+
     public void addExpr(Expr e) {
         expr.add(e);
     }
