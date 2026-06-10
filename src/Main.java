@@ -8,6 +8,8 @@ import Visitor.PythonVisitor;
 import Visitor.PythonSemanticAnalyzer;
 import Visitor.HTMLVisitor;
 import Visitor.HTMLSemanticAnalyzer;
+import Generator.PythonCodeGenerator;
+import Generator.HTMLCodeGenerator;
 import AST.HTML.HtmlDocumentNode;
 import AST.Python.Program;
 import SymbolTable.SemanticError;
@@ -18,6 +20,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
@@ -62,6 +65,23 @@ public class Main {
                     System.out.println(error);
                 }
             }
+
+            System.out.println("\n--- Code Generation ---");
+            PythonCodeGenerator generator = new PythonCodeGenerator();
+            generator.generate(program);
+            String generatedCode = generator.getGeneratedCode();
+            System.out.println("Generated Python Code:");
+            System.out.println("-----------------------");
+            System.out.println(generatedCode);
+            System.out.println("-----------------------");
+            
+            System.out.println("Do you want to save the generated code? (y/n)");
+            if (scanner.nextLine().equalsIgnoreCase("y")) {
+                try (FileWriter writer = new FileWriter("generated_app.py")) {
+                    writer.write(generatedCode);
+                    System.out.println("Code saved to generated_app.py");
+                }
+            }
         }
         else if (chose == 2) {
             System.out.println("Enter HTML file path (default: test/products.html):");
@@ -89,6 +109,23 @@ public class Main {
                 System.out.println("Found " + errors.size() + " semantic error(s):");
                 for (SemanticError error : errors) {
                     System.out.println(error);
+                }
+            }
+
+            System.out.println("\n--- Code Generation ---");
+            HTMLCodeGenerator generator = new HTMLCodeGenerator();
+            generator.generate(program);
+            String generatedCode = generator.getGeneratedCode();
+            System.out.println("Generated HTML Code:");
+            System.out.println("-----------------------");
+            System.out.println(generatedCode);
+            System.out.println("-----------------------");
+
+            System.out.println("Do you want to save the generated code? (y/n)");
+            if (scanner.nextLine().equalsIgnoreCase("y")) {
+                try (FileWriter writer = new FileWriter("generated_page.html")) {
+                    writer.write(generatedCode);
+                    System.out.println("Code saved to generated_page.html");
                 }
             }
         }

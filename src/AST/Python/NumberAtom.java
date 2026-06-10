@@ -9,6 +9,10 @@ public class NumberAtom extends Atom {
         isNegative = negative;
     }
 
+    public boolean isNegative() {
+        return isNegative;
+    }
+
     public Number getNumber() {
         return number;
     }

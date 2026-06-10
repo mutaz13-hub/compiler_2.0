@@ -11,7 +11,11 @@ public class Comparison extends Test{
         NOT_IN,
         IS,
         IS_NOT,
-        EQ
+        EQ,
+        LESS,
+        GREATER,
+        LESS_EQ,
+        GREATER_EQ
     }
     List<CompOp> ops = new ArrayList<>();
     List<Expr> expr = new ArrayList<>();

@@ -328,6 +328,7 @@ import SymbolTable.PythonSymbolTable;
             if (ctx.NOT() != null) {
                 Test innerTest = (Test) visit(ctx.test(0));
                 node.setTest(innerTest);
+                node.setOperator(Test.Operator.NOT);
                 return node;
             }
             if (ctx.AND() != null) {
@@ -335,6 +336,7 @@ import SymbolTable.PythonSymbolTable;
                 Test right = (Test) visit(ctx.test(1));
                 node.setTest(left);
                 node.setTest(right);
+                node.setOperator(Test.Operator.AND);
                 return node;
             }
             if (ctx.OR() != null) {
@@ -342,14 +344,19 @@ import SymbolTable.PythonSymbolTable;
                 Test right = (Test) visit(ctx.test(1));
                 node.setTest(left);
                 node.setTest(right);
+                node.setOperator(Test.Operator.OR);
                 return node;
             }
             return null;
         }
 
+
+
+
         @Override
-        public Test visitComparison(PythonParser.ComparisonContext ctx) {
+        public Root visitComparison(PythonParser.ComparisonContext ctx) {
             Comparison node = new Comparison();
+            node.setLine(ctx.getStart().getLine());
             node.addExpr((Expr) visit(ctx.expr(0)));
             for (int i = 1; i < ctx.expr().size(); i++) {
                 Comparison.CompOp op = null;
@@ -376,13 +383,13 @@ import SymbolTable.PythonSymbolTable;
 
         @Override
         public Expr visitAtomExpr(PythonParser.AtomExprContext ctx) {
-            AtomExpr node = new AtomExpr();
-            node.setAtom((Atom) visit(ctx.atom()));
-            for (PythonParser.TrailerContext tctx : ctx.trailer()) {
-                node.addTrailer((Trailer) visit(tctx));
-            }
-            return node;
-        }
+             AtomExpr node = new AtomExpr();
+             node.setAtom((Atom) visit(ctx.atom()));
+             for (PythonParser.TrailerContext tctx : ctx.trailer()) {
+                 node.addTrailer((Trailer) visit(tctx));
+             }
+             return node;
+         }
 
         @Override
         public Expr visitAdditiveExpr(PythonParser.AdditiveExprContext ctx) {

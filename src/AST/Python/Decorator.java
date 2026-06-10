@@ -19,8 +19,13 @@ public class Decorator extends Decorated {
         return args;
     }
 
-    public void addArg(Test t) {
-        this.args.add(t);
+    public Root getDotted_name() {
+        if (names.isEmpty()) return null;
+        return names.get(0); // Simplified
+    }
+
+    public void addArg(Test test) {
+        this.args.add(test);
     }
 
     @Override

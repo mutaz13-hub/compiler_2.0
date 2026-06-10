@@ -27,6 +27,10 @@ public class Decorated extends Stmt {
         this.compoundStmt = compoundStmt;
     }
 
+    public Root getStmt() {
+        return compoundStmt;
+    }
+
     @Override
     public String toString(int level) {
         StringBuilder sb = new StringBuilder();
