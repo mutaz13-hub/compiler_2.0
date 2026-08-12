@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Edit {{ product.name }} - {{ site_title }}</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header>
+        <h1>{{ site_title }}</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="add_product.html">Add Product</a>
+        </nav>
+    </header>
+
+    <main class="form-page">
+        <h2>Edit Product</h2>
+        <form class="add-form" method="post" action="/edit/{{ product.id }}">
+            <label>Name</label>
+            <input name="name" value="{{ product.name }}" required />
+            <label>Price</label>
+            <input name="price" type="number" value="{{ product.price }}" required />
+            <label>Image URL</label>
+            <input name="image" value="{{ product.image }}" />
+            <div class="actions">
+                <a href="product_{{ product.id }}.html" class="btn secondary">Cancel</a>
+                <button class="btn" type="submit">Save Changes</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

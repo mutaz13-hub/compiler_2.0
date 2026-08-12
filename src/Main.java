@@ -87,8 +87,8 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("you want Python or HTML or Full Pipeline (Python data -> Jinja -> HTML)");
-        System.out.println("1:Python" + "\n" + "2:HTML" + "\n" + "3:Full Pipeline");
+        System.out.println("you want Python or HTML or Full Pipeline (Python data -> Jinja -> HTML) or CSS or Generate Full Site");
+        System.out.println("1:Python" + "\n" + "2:HTML" + "\n" + "3:Full Pipeline" + "\n" + "4:CSS" + "\n" + "5:Generate Full Site");
         int chose = 0;
         if (scanner.hasNextInt()) {
             chose = scanner.nextInt();
@@ -248,6 +248,20 @@ public class Main {
             System.out.println("\n--- Jinja AST ---");
             jinjaProgram.print(0);
 
+            // --- Stage 3.5: semantic analysis on the Jinja AST, checked
+            // against the real data extracted from Python ---
+            System.out.println("\n--- Semantic Analysis (Jinja) ---");
+            Visitor.JinjaSemanticAnalyzer jinjaAnalyzer = new Visitor.JinjaSemanticAnalyzer();
+            jinjaAnalyzer.analyze(jinjaProgram, data);
+            List<SemanticError> jinjaErrors = jinjaAnalyzer.getErrors();
+            if (jinjaErrors.isEmpty()) {
+                System.out.println("No semantic errors found.");
+            } else {
+                System.out.println("Found " + jinjaErrors.size() + " semantic error(s):");
+                for (SemanticError error : jinjaErrors) System.out.println(error);
+            }
+            jinjaAnalyzer.getSymbolTable().printTable();
+
             // --- Stage 4: render Jinja AST against the extracted data -> HTML ---
             StringBuilder rendered = new StringBuilder();
             jinjaProgram.render(data, rendered);
@@ -263,6 +277,138 @@ public class Main {
             System.out.println(rendered.toString());
             System.out.println("-----------------------");
             System.out.println("Saved to " + outName);
+        }
+        else if (chose == 4) {
+            System.out.println("Enter CSS file path (default: test/style.css):");
+            String source = scanner.nextLine().trim();
+            if (source.isEmpty()) source = "test/style.css";
+            File cssFile = resolveInputFile(source);
+
+            org.antlr.v4.runtime.CharStream cssCharStream = CharStreams.fromFileName(cssFile.getPath());
+            antlrCSS.CSSLexer cssLexer = new antlrCSS.CSSLexer(cssCharStream);
+            CommonTokenStream cssTokens = new CommonTokenStream(cssLexer);
+            antlrCSS.CSSParser cssParser = new antlrCSS.CSSParser(cssTokens);
+
+            Visitor.CSSVisitor cssVisitor = new Visitor.CSSVisitor();
+            AST.CSS.CSSProgram cssProgram = cssVisitor.visitProgram(cssParser.stylesheet());
+
+            System.out.println("\n--- CSS AST ---");
+            System.out.println(cssProgram);
+
+            SymbolTable.CSSSymbolTable cssSymbolTable = new SymbolTable.CSSSymbolTable();
+            cssSymbolTable.build(cssProgram);
+            cssSymbolTable.printTable();
+
+            System.out.println("\n--- Semantic Analysis (CSS) ---");
+            Visitor.CSSSemanticAnalyzer cssAnalyzer = new Visitor.CSSSemanticAnalyzer();
+            cssAnalyzer.analyze(cssProgram);
+            List<SemanticError> cssErrors = cssAnalyzer.getErrors();
+            if (cssErrors.isEmpty()) {
+                System.out.println("No semantic errors found.");
+            } else {
+                System.out.println("Found " + cssErrors.size() + " semantic error(s):");
+                for (SemanticError error : cssErrors) System.out.println(error);
+            }
+        }
+        else if (chose == 5) {
+            // Generates the full multi-page site the project requires:
+            // list / add / view / edit / delete pages, all cross-linked by
+            // real hrefs, driven entirely by the products list extracted
+            // from the Python data file.
+            System.out.println("Enter Python data file path (default: test/webapp_products.py):");
+            String pySource = scanner.nextLine().trim();
+            if (pySource.isEmpty()) pySource = "test/webapp_products.py";
+
+            File pyDataFile = resolveInputFile(pySource);
+            CharStream siteCharStream = CharStreams.fromFileName(pyDataFile.getPath());
+            PythonLexer siteLexer = new PythonLexer(siteCharStream);
+            CommonTokenStream siteTokens = new CommonTokenStream(siteLexer);
+            PythonParser siteParser = new PythonParser(siteTokens);
+            PythonVisitor sitePyVisitor = new PythonVisitor();
+            Program siteProgram = (Program) sitePyVisitor.visit(siteParser.root());
+
+            PythonDataExtractor siteExtractor = new PythonDataExtractor();
+            siteExtractor.extract(siteProgram);
+            Map<String, Object> siteData = siteExtractor.getGlobals();
+
+            Object productsObj = siteData.get("products");
+            Object siteTitleObj = siteData.get("site_title");
+            String siteTitle = siteTitleObj != null ? String.valueOf(siteTitleObj) : "My Shop";
+            @SuppressWarnings("unchecked")
+            List<Object> products = (productsObj instanceof List) ? (List<Object>) productsObj : new java.util.ArrayList<>();
+
+            new File("output").mkdirs();
+            int pagesWritten = 0;
+
+            // index.html - list page
+            Map<String, Object> indexContext = new java.util.HashMap<>();
+            indexContext.put("products", products);
+            indexContext.put("site_title", siteTitle);
+            writeRenderedPage("templates/index.jinja", indexContext, "output/index.html");
+            pagesWritten++;
+
+            // add_product.html - static form page (no product-specific data needed)
+            Map<String, Object> addContext = new java.util.HashMap<>();
+            addContext.put("site_title", siteTitle);
+            writeRenderedPage("templates/add_product.jinja", addContext, "output/add_product.html");
+            pagesWritten++;
+
+            // one view/edit/delete page per product
+            for (Object p : products) {
+                if (!(p instanceof Map)) continue;
+                Map<String, Object> perProductContext = new java.util.HashMap<>();
+                perProductContext.put("product", p);
+                perProductContext.put("site_title", siteTitle);
+                Object idObj = ((Map<?, ?>) p).get("id");
+                String id = idObj != null ? String.valueOf(idObj) : "0";
+
+                writeRenderedPage("templates/product_detail.jinja", perProductContext, "output/product_" + id + ".html");
+                writeRenderedPage("templates/edit_product.jinja", perProductContext, "output/edit_" + id + ".html");
+                writeRenderedPage("templates/delete_confirm.jinja", perProductContext, "output/delete_" + id + ".html");
+                pagesWritten += 3;
+            }
+
+            // copy style.css alongside the generated pages so the <link> tags resolve
+            try {
+                File cssSrc = resolveInputFile("test/style.css");
+                Files.copy(cssSrc.toPath(), new File("output/style.css").toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } catch (Exception e) {
+                System.out.println("(note: test/style.css not found - pages will render without styling)");
+            }
+
+            System.out.println("\nGenerated " + pagesWritten + " page(s) in output/:");
+            System.out.println("  - output/index.html");
+            System.out.println("  - output/add_product.html");
+            for (Object p : products) {
+                if (!(p instanceof Map)) continue;
+                Object idObj = ((Map<?, ?>) p).get("id");
+                String id = idObj != null ? String.valueOf(idObj) : "0";
+                System.out.println("  - output/product_" + id + ".html (view)");
+                System.out.println("  - output/edit_" + id + ".html (edit)");
+                System.out.println("  - output/delete_" + id + ".html (delete confirm)");
+            }
+            System.out.println("\nOpen output/index.html in a browser and click through - every link points to a real generated page.");
+        }
+    }
+
+    /** Parses + semantically checks + renders one Jinja template against `context`, writing the result to `outPath`. */
+    private static void writeRenderedPage(String templatePath, Map<String, Object> context, String outPath) throws IOException {
+        File templateFile = resolveInputFile(templatePath);
+        String templateText = new String(Files.readAllBytes(templateFile.toPath()));
+        JinjaParser parser = new JinjaParser();
+        JinjaProgram program = parser.parse(templateText);
+
+        Visitor.JinjaSemanticAnalyzer analyzer = new Visitor.JinjaSemanticAnalyzer();
+        analyzer.analyze(program, context);
+        for (SemanticError error : analyzer.getErrors()) {
+            System.out.println("  [" + outPath + "] " + error);
+        }
+
+        StringBuilder rendered = new StringBuilder();
+        program.render(context, rendered);
+        try (FileWriter writer = new FileWriter(outPath)) {
+            writer.write(rendered.toString());
         }
     }
 

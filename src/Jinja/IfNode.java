@@ -15,6 +15,10 @@ public class IfNode extends JinjaNode {
         this.line = line;
     }
 
+    public String getCondition() { return condition; }
+    public JinjaProgram getThenBody() { return thenBody; }
+    public JinjaProgram getElseBody() { return elseBody; }
+
     @Override
     public void render(Map<String, Object> context, StringBuilder out) {
         if (JinjaEvaluator.isTruthy(JinjaEvaluator.resolve(condition, context))) {

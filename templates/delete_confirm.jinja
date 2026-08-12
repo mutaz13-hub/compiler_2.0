@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Delete {{ product.name }} - {{ site_title }}</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+    <header>
+        <h1>{{ site_title }}</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="add_product.html">Add Product</a>
+        </nav>
+    </header>
+
+    <main class="form-page">
+        <h2>Delete "{{ product.name }}"?</h2>
+        <p>This action cannot be undone.</p>
+        <form class="add-form" method="post" action="/delete/{{ product.id }}">
+            <div class="actions">
+                <a href="product_{{ product.id }}.html" class="btn secondary">Cancel</a>
+                <button class="btn danger" type="submit">Confirm Delete</button>
+            </div>
+        </form>
+    </main>
+</body>
+</html>

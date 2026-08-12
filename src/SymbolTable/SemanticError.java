@@ -11,7 +11,15 @@ public class SemanticError {
         INVALID_NESTING,
         MISSING_REQUIRED_ATTRIBUTE,
         DEPRECATED_TAG,
-        EMPTY_TITLE
+        EMPTY_TITLE,
+        EMPTY_RULE,
+        DUPLICATE_PROPERTY,
+        UNDEFINED_TEMPLATE_VARIABLE,
+        UNCLOSED_BLOCK,
+        FOR_NOT_ITERABLE,
+        INVALID_ATTRIBUTE_ACCESS,
+        EMPTY_LOOP_BODY,
+        DUPLICATE_LOOP_VARIABLE
     }
 
     private ErrorType type;

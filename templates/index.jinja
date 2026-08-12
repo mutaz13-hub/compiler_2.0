@@ -2,17 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Products</title>
+    <title>{{ site_title }}</title>
+    <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <h1>Products</h1>
-    {% for product in products %}
-    <div class="product">
-        <h3>{{ product.name }}</h3>
-        <p>Price: {{ product.price }}</p>
-    </div>
-    {% else %}
-    <p>No products</p>
-    {% endfor %}
+    <header>
+        <h1>{{ site_title }}</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="add_product.html">Add Product</a>
+        </nav>
+    </header>
+
+    <main class="grid">
+        {% for product in products %}
+        <div class="card">
+            <img src="{{ product.image }}" alt="{{ product.name }}" />
+            <h3>{{ product.name }}</h3>
+            <p class="price">${{ product.price }}</p>
+            <div class="actions">
+                <a href="product_{{ product.id }}.html" class="btn">View</a>
+                <a href="edit_{{ product.id }}.html" class="btn secondary">Edit</a>
+                <a href="delete_{{ product.id }}.html" class="btn danger">Delete</a>
+            </div>
+        </div>
+        {% else %}
+        <p>No products yet.</p>
+        {% endfor %}
+    </main>
 </body>
 </html>

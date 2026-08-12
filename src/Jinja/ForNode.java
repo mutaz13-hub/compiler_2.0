@@ -24,6 +24,11 @@ public class ForNode extends JinjaNode {
         this.line = line;
     }
 
+    public String getLoopVar() { return loopVar; }
+    public String getIterableExpr() { return iterableExpr; }
+    public JinjaProgram getBody() { return body; }
+    public JinjaProgram getElseBody() { return elseBody; }
+
     @SuppressWarnings("unchecked")
     @Override
     public void render(Map<String, Object> context, StringBuilder out) {

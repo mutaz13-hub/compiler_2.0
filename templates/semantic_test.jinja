@@ -1,0 +1,11 @@
+{{ undefined_var }}
+{% for product in products %}
+  {{ product.name }}
+  {{ product.nonexistent_field }}
+  {% for product in products %}
+  {% endfor %}
+{% endfor %}
+{% for missing_list in not_a_list %}
+{% endfor %}
+{% for empty_loop_item in products %}
+{% endfor %}
