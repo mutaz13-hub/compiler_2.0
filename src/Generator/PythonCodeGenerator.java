@@ -74,7 +74,6 @@ public class PythonCodeGenerator {
         } else if (node instanceof SimpleStmtBlock) {
             smallStmts = ((SimpleStmtBlock) node).getSmallStmts();
         }
-
         if (smallStmts != null) {
             for (Small_stmt small : smallStmts) {
                 printIndent();
@@ -305,6 +304,32 @@ public class PythonCodeGenerator {
             emit.print("print");
         } else if (node instanceof NoneAtom) {
             emit.print("None");
+        } else if (node instanceof ListAtom) {
+            // NOTE: Atom extends AtomExpr (inheritance, same pitfall as
+            // Comparison extends Test above), so ListAtom/DictAtom instances
+            // also pass `instanceof AtomExpr`. Since that check appears
+            // further down, it MUST be listed after these more specific
+            // checks, or it silently swallows list/dict atoms by reading
+            // their inherited-but-unset `atom`/`trailers` fields.
+            emit.print("[");
+            Testlist_comp tc = ((ListAtom) node).getTestlist_comp();
+            if (tc != null) emitExpr(tc);
+            emit.print("]");
+        } else if (node instanceof Testlist_comp) {
+            List<Test> items = ((Testlist_comp) node).getTest();
+            for (int i = 0; i < items.size(); i++) {
+                emitExpr(items.get(i));
+                if (i < items.size() - 1) emit.print(", ");
+            }
+        } else if (node instanceof DictAtom) {
+            List<DictItem> items = ((DictAtom) node).getItems();
+            emit.print("{");
+            for (int i = 0; i < items.size(); i++) {
+                emit.print("\"" + items.get(i).getKey() + "\": ");
+                emitExpr(items.get(i).getValue());
+                if (i < items.size() - 1) emit.print(", ");
+            }
+            emit.print("}");
         } else if (node instanceof AtomExpr) {
             AtomExpr ae = (AtomExpr) node;
             emitExpr(ae.getAtom());
@@ -316,6 +341,21 @@ public class PythonCodeGenerator {
             emitExpr(add.getLeft());
             emit.print(" " + (add.getOp() == AdditiveExpr.BinaryOp.PLUS ? "+" : "-") + " ");
             emitExpr(add.getRight());
+        } else if (node instanceof Comparison) {
+            // NOTE: Comparison extends Test, so this check MUST come before
+            // the `instanceof Test` branch below, or every Comparison node
+            // gets silently swallowed by the Test branch (it inherits Test's
+            // empty `comparison`/`test` fields, which were never populated
+            // for a Comparison instance, so nothing gets emitted).
+            Comparison c = (Comparison) node;
+            List<Expr> exprs = c.getExprs();
+            List<Comparison.CompOp> ops = c.getOps();
+            for (int i = 0; i < exprs.size(); i++) {
+                emitExpr(exprs.get(i));
+                if (i < ops.size()) {
+                    emit.print(" " + getOpStr(ops.get(i)) + " ");
+                }
+            }
         } else if (node instanceof Test) {
             Test t = (Test) node;
             if (t.getComparison() != null) {
@@ -334,16 +374,6 @@ public class PythonCodeGenerator {
                             emit.print(", ");
                         }
                     }
-                }
-            }
-        } else if (node instanceof Comparison) {
-            Comparison c = (Comparison) node;
-            List<Expr> exprs = c.getExprs();
-            List<Comparison.CompOp> ops = c.getOps();
-            for (int i = 0; i < exprs.size(); i++) {
-                emitExpr(exprs.get(i));
-                if (i < ops.size()) {
-                    emit.print(" " + getOpStr(ops.get(i)) + " ");
                 }
             }
         } else if (node instanceof Exprlist) {

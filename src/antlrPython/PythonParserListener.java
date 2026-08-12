@@ -1,4 +1,4 @@
-// Generated from C:/Users/Mutaz13/Desktop/compiler_2.0/compiler_2.0/src/PythonParser.g4 by ANTLR 4.13.2
+// Generated from PythonParser.g4 by ANTLR 4.13.2
 
 package antlrPython;
 
@@ -246,30 +246,6 @@ public interface PythonParserListener extends ParseTreeListener {
 	 */
 	void exitAnnotatedAssign(PythonParser.AnnotatedAssignContext ctx);
 	/**
-	 * Enter a parse tree produced by the {@code listAssign}
-	 * labeled alternative in {@link PythonParser#assign_part}.
-	 * @param ctx the parse tree
-	 */
-	void enterListAssign(PythonParser.ListAssignContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code listAssign}
-	 * labeled alternative in {@link PythonParser#assign_part}.
-	 * @param ctx the parse tree
-	 */
-	void exitListAssign(PythonParser.ListAssignContext ctx);
-	/**
-	 * Enter a parse tree produced by the {@code blockAssign}
-	 * labeled alternative in {@link PythonParser#assign_part}.
-	 * @param ctx the parse tree
-	 */
-	void enterBlockAssign(PythonParser.BlockAssignContext ctx);
-	/**
-	 * Exit a parse tree produced by the {@code blockAssign}
-	 * labeled alternative in {@link PythonParser#assign_part}.
-	 * @param ctx the parse tree
-	 */
-	void exitBlockAssign(PythonParser.BlockAssignContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link PythonParser#test}.
 	 * @param ctx the parse tree
 	 */
@@ -338,6 +314,18 @@ public interface PythonParserListener extends ParseTreeListener {
 	 */
 	void exitListAtom(PythonParser.ListAtomContext ctx);
 	/**
+	 * Enter a parse tree produced by the {@code dictAtom}
+	 * labeled alternative in {@link PythonParser#atom}.
+	 * @param ctx the parse tree
+	 */
+	void enterDictAtom(PythonParser.DictAtomContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code dictAtom}
+	 * labeled alternative in {@link PythonParser#atom}.
+	 * @param ctx the parse tree
+	 */
+	void exitDictAtom(PythonParser.DictAtomContext ctx);
+	/**
 	 * Enter a parse tree produced by the {@code nameAtom}
 	 * labeled alternative in {@link PythonParser#atom}.
 	 * @param ctx the parse tree
@@ -397,6 +385,16 @@ public interface PythonParserListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitStringAtom(PythonParser.StringAtomContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PythonParser#dictItem}.
+	 * @param ctx the parse tree
+	 */
+	void enterDictItem(PythonParser.DictItemContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PythonParser#dictItem}.
+	 * @param ctx the parse tree
+	 */
+	void exitDictItem(PythonParser.DictItemContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PythonParser#testlist_comp}.
 	 * @param ctx the parse tree

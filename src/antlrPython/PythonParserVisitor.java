@@ -1,4 +1,4 @@
-// Generated from C:/Users/Mutaz13/Desktop/compiler_2.0/compiler_2.0/src/PythonParser.g4 by ANTLR 4.13.2
+// Generated from PythonParser.g4 by ANTLR 4.13.2
 
 package antlrPython;
 
@@ -152,20 +152,6 @@ public interface PythonParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAnnotatedAssign(PythonParser.AnnotatedAssignContext ctx);
 	/**
-	 * Visit a parse tree produced by the {@code listAssign}
-	 * labeled alternative in {@link PythonParser#assign_part}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitListAssign(PythonParser.ListAssignContext ctx);
-	/**
-	 * Visit a parse tree produced by the {@code blockAssign}
-	 * labeled alternative in {@link PythonParser#assign_part}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitBlockAssign(PythonParser.BlockAssignContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link PythonParser#test}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -206,6 +192,13 @@ public interface PythonParserVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitListAtom(PythonParser.ListAtomContext ctx);
 	/**
+	 * Visit a parse tree produced by the {@code dictAtom}
+	 * labeled alternative in {@link PythonParser#atom}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDictAtom(PythonParser.DictAtomContext ctx);
+	/**
 	 * Visit a parse tree produced by the {@code nameAtom}
 	 * labeled alternative in {@link PythonParser#atom}.
 	 * @param ctx the parse tree
@@ -240,6 +233,12 @@ public interface PythonParserVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitStringAtom(PythonParser.StringAtomContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link PythonParser#dictItem}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDictItem(PythonParser.DictItemContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link PythonParser#testlist_comp}.
 	 * @param ctx the parse tree

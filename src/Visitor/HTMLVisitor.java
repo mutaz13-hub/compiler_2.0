@@ -78,33 +78,29 @@ public class HTMLVisitor extends HTMLParserBaseVisitor<Program> {
 
             HTMLParser.HtmlContentContext content = ctx.htmlContent();
 
-            for (HTMLParser.HtmlChardataContext textCtx
-                    : content.htmlChardata()) {
-
-                Program text = visit(textCtx);
-
-                if (text != null) {
-                    children.add(text);
-                }
-            }
-
-            for (HTMLParser.HtmlElementContext childCtx
-                    : content.htmlElement()) {
-
-                Program child = visit(childCtx);
-
-                if (child != null) {
-                    children.add(child);
-                }
-            }
-
-            for (HTMLParser.HtmlCommentContext commentCtx
-                    : content.htmlComment()) {
-
-                Program comment = visit(commentCtx);
-
-                if (comment != null) {
-                    children.add(comment);
+            // NOTE: we must walk content.children() in original parse-tree
+            // order and dispatch by type, rather than looping over
+            // content.htmlChardata()/.htmlElement()/.htmlComment()
+            // separately. Those typed accessors each return only the
+            // matches of that one type, still in relative order among
+            // themselves, but the three lists are not merged back together
+            // in document order. That silently reordered any content where
+            // text, elements, and comments are interleaved (e.g. a Jinja
+            // {% for %} tag sitting between two <article> elements) so that
+            // all text came first, then all elements, then all comments.
+            if (content.children != null) {
+                for (org.antlr.v4.runtime.tree.ParseTree childNode : content.children) {
+                    Program child = null;
+                    if (childNode instanceof HTMLParser.HtmlChardataContext) {
+                        child = visit((HTMLParser.HtmlChardataContext) childNode);
+                    } else if (childNode instanceof HTMLParser.HtmlElementContext) {
+                        child = visit((HTMLParser.HtmlElementContext) childNode);
+                    } else if (childNode instanceof HTMLParser.HtmlCommentContext) {
+                        child = visit((HTMLParser.HtmlCommentContext) childNode);
+                    }
+                    if (child != null) {
+                        children.add(child);
+                    }
                 }
             }
         }

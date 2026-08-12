@@ -1,4 +1,4 @@
-// Generated from C:/Users/Mutaz13/Desktop/compiler_2.0/compiler_2.0/src/PythonParser.g4 by ANTLR 4.13.2
+// Generated from PythonParser.g4 by ANTLR 4.13.2
 
 package antlrPython;
 
@@ -271,30 +271,6 @@ public class PythonParserBaseListener implements PythonParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterListAssign(PythonParser.ListAssignContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitListAssign(PythonParser.ListAssignContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterBlockAssign(PythonParser.BlockAssignContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitBlockAssign(PythonParser.BlockAssignContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterTest(PythonParser.TestContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -367,6 +343,18 @@ public class PythonParserBaseListener implements PythonParserListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterDictAtom(PythonParser.DictAtomContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDictAtom(PythonParser.DictAtomContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterNameAtom(PythonParser.NameAtomContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -422,6 +410,18 @@ public class PythonParserBaseListener implements PythonParserListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitStringAtom(PythonParser.StringAtomContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterDictItem(PythonParser.DictItemContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitDictItem(PythonParser.DictItemContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -302,23 +302,6 @@ import SymbolTable.PythonSymbolTable;
         }
 
         @Override
-        public Assign_part visitListAssign(PythonParser.ListAssignContext ctx) {
-            ListAssign node = new ListAssign();
-            node.setStmt((Simple_stmt) visit(ctx.simple_stmt()));
-            return node;
-        }
-
-        @Override
-        public Assign_part visitBlockAssign(PythonParser.BlockAssignContext ctx) {
-            BlockAssign node = new BlockAssign();
-            node.getSmall_stmt().add((Small_stmt) visit(ctx.small_stmt(0)));
-            for (int i = 1; i < ctx.small_stmt().size(); i++) {
-                node.getSmall_stmt().add((Small_stmt) visit(ctx.small_stmt(i)));
-            }
-            return node;
-        }
-
-        @Override
         public Root visitTest(PythonParser.TestContext ctx) {
             Test node = new Test();
             if (ctx.comparison() != null) {
@@ -394,6 +377,7 @@ import SymbolTable.PythonSymbolTable;
         @Override
         public Expr visitAdditiveExpr(PythonParser.AdditiveExprContext ctx) {
             AdditiveExpr node = new AdditiveExpr();
+            node.setLine(ctx.getStart().getLine());
             node.setLeft((Expr) visit(ctx.expr(0)));
             node.setRight((Expr) visit(ctx.expr(1)));
             if (ctx.PLUS() != null) {
@@ -420,6 +404,28 @@ import SymbolTable.PythonSymbolTable;
             node.setLine(ctx.getStart().getLine());
             if (ctx.testlist_comp() != null) {
                 node.setTestlist_comp((Testlist_comp) visit(ctx.testlist_comp()));
+            }
+            return node;
+        }
+
+        @Override
+        public Atom visitDictAtom(PythonParser.DictAtomContext ctx) {
+            DictAtom node = new DictAtom();
+            node.setLine(ctx.getStart().getLine());
+            for (PythonParser.DictItemContext ictx : ctx.dictItem()) {
+                DictItem item = new DictItem();
+                item.setLine(ictx.getStart().getLine());
+                String rawKey = ictx.STRING() != null ? ictx.STRING().getText() : ictx.name().getText();
+                // STRING token text includes the surrounding quote characters
+                // (e.g. "\"name\""); strip them here so the key is stored
+                // consistently unquoted, and toString()/codegen re-add quotes
+                // once instead of doubling them up.
+                if (rawKey.length() >= 2 && (rawKey.startsWith("\"") || rawKey.startsWith("'"))) {
+                    rawKey = rawKey.substring(1, rawKey.length() - 1);
+                }
+                item.setKey(rawKey);
+                item.setValue((Test) visit(ictx.test()));
+                node.addItem(item);
             }
             return node;
         }

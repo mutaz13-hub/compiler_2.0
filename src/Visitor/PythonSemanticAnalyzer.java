@@ -96,6 +96,25 @@ public class PythonSemanticAnalyzer {
             // Simplified: just analyze children
             analyzeNode(forStmt.getSuite());
             symbolTable.exit();
+        } else if (node instanceof With_stmt) {
+            // NOTE: `with` blocks were previously not analyzed at all (no
+            // branch existed here), so any variable assigned inside a
+            // `with ... as f:` block (very common for file I/O, e.g.
+            // `TEMPLATE_STR = f.read()`) never made it into the symbol
+            // table, and later legitimate uses of it were incorrectly
+            // flagged as UNDEFINED_VARIABLE. Unlike function bodies, a
+            // `with` block does not introduce a new scope in real Python,
+            // so we deliberately do NOT call symbolTable.enter()/exit()
+            // here - the body is analyzed directly in the enclosing scope.
+            With_stmt withStmt = (With_stmt) node;
+            for (With_item item : withStmt.getItems()) {
+                if (item.getTest() != null) analyzeNode(item.getTest());
+                if (item.getAlias() != null) {
+                    String aliasName = getRawName(item.getAlias());
+                    symbolTable.define(aliasName, "variable", "unknown", aliasName, node.getLine());
+                }
+            }
+            analyzeNode(withStmt.getSuite());
         } else if (node instanceof Suite) {
             Suite suite = (Suite) node;
             for (Root stmt : suite.getStmts()) {
@@ -275,9 +294,13 @@ public class PythonSemanticAnalyzer {
     }
 
     private boolean isBuiltin(String name) {
-        return name.equals("print") || name.equals("len") || name.equals("range") || 
+        return name.equals("print") || name.equals("len") || name.equals("range") ||
                name.equals("int") || name.equals("float") || name.equals("str") ||
-               name.equals("__name__") || name.equals("None") || name.equals("True") || name.equals("False");
+               name.equals("__name__") || name.equals("None") || name.equals("True") || name.equals("False") ||
+               name.equals("max") || name.equals("min") || name.equals("sum") || name.equals("sorted") ||
+               name.equals("list") || name.equals("dict") || name.equals("set") || name.equals("tuple") ||
+               name.equals("enumerate") || name.equals("zip") || name.equals("bool") || name.equals("abs") ||
+               name.equals("open") || name.equals("round") || name.equals("isinstance") || name.equals("type");
     }
 
     private void checkFlaskVariables() {

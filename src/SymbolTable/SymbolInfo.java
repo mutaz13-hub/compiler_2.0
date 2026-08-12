@@ -1,8 +1,8 @@
 package SymbolTable;
 
 public class SymbolInfo {
-    private String type; // variable, function, parameter
-    private String dataType; // int, float, string, bool, etc.
+    private String type;
+    private String dataType;
     private String value;
     private int line;
 
@@ -21,10 +21,6 @@ public class SymbolInfo {
         return dataType;
     }
 
-    public void setDataType(String dataType) {
-        this.dataType = dataType;
-    }
-
     public String getValue() {
         return value;
     }
@@ -35,6 +31,6 @@ public class SymbolInfo {
 
     @Override
     public String toString() {
-        return "Type: " + type + ", DataType: " + dataType + ", Value: " + value + ", Line: " + line;
+        return "SymbolInfo{type=" + type + ", dataType=" + dataType + ", value=" + value + ", line=" + line + "}";
     }
 }
