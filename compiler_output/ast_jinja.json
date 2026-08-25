@@ -198,7 +198,6 @@
                     ],
                     "line": 143
                   },
-                  "iterableExpr": "products",
                   "elseBody": {
                     "node": "JinjaProgram",
                     "children": [
@@ -210,6 +209,7 @@
                     ],
                     "line": 157
                   },
+                  "iterableExpr": "products",
                   "loopVar": "p",
                   "line": 143
                 },
