@@ -1,0 +1,20 @@
+=== Python Semantic Analysis (test\app.py) ===
+[UNDEFINED_VARIABLE] Line 19: Undefined variable: 'save_products'
+[UNDEFINED_VARIABLE] Line 78: Undefined variable: 'new_products'
+[UNDEFINED_VARIABLE] Line 81: Undefined variable: 'new_products'
+
+=== Jinja Semantic Analysis (index (products grid) -> output/index.html) ===
+[UNDEFINED_TEMPLATE_VARIABLE] Line 88: Undefined template variable: 'request'
+[UNDEFINED_TEMPLATE_VARIABLE] Line 110: Undefined template variable: 'url_for('delete_product', pid=product'
+[INVALID_ATTRIBUTE_ACCESS] Line 145: 'p' has no attribute 'image or 'https://via' in the data passed from Python
+[UNDEFINED_TEMPLATE_VARIABLE] Line 151: Undefined template variable: '(p'
+
+=== Jinja Semantic Analysis (product_detail -> output/product_detail.html) ===
+[UNDEFINED_TEMPLATE_VARIABLE] Line 88: Undefined template variable: 'request'
+[UNDEFINED_TEMPLATE_VARIABLE] Line 110: Undefined template variable: 'url_for('delete_product', pid=product'
+[UNDEFINED_TEMPLATE_VARIABLE] Line 151: Undefined template variable: '(p'
+
+=== Jinja Semantic Analysis (add_product (form) -> output/add_product.html) ===
+[UNDEFINED_TEMPLATE_VARIABLE] Line 88: Undefined template variable: 'request'
+[UNDEFINED_TEMPLATE_VARIABLE] Line 110: Undefined template variable: 'url_for('delete_product', pid=product'
+[UNDEFINED_TEMPLATE_VARIABLE] Line 151: Undefined template variable: '(p'

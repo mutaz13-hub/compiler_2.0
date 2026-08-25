@@ -1,0 +1,238 @@
+{
+  "node": "JinjaProgram",
+  "children": [
+    {
+      "node": "TextNode",
+      "text": "\n<html lang=\"ar\">\n<head>\n  <meta charset=\"utf-8\" />\n  <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\" />\n  <title>Products</title>\n\n  <!-- CSS مدمج لملف واحد كما طلبت -->\n  <style>\n    :root{\n      --bg:#f5f7fb;\n      --card:#fff;\n      --accent:#2b6cb0;\n      --muted:#777;\n      --radius:12px;\n      --gap:18px;\n    }\n    *{box-sizing:border-box;font-family: \"Segoe UI\", Tahoma, Geneva, Verdana, sans-serif}\n    body{\n      margin:0;background:var(--bg);color:#111;padding:30px;\n      direction:rtl;\n    }\n\n    .container{\n      max-width:1100px;margin:0 auto;\n    }\n\n    header{\n      display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;\n    }\n    header h1{margin:0;font-size:22px}\n    header .controls{display:flex;gap:12px;align-items:center}\n    .btn{\n      background:var(--accent);color:#fff;padding:10px 14px;border-radius:10px;border:none;cursor:pointer;\n      box-shadow:0 6px 18px rgba(43,108,176,.12);\n    }\n    .btn.secondary{background:#fff;color:var(--accent);border:1px solid rgba(43,108,176,.12);}\n    .search{\n      padding:8px 12px;border-radius:10px;border:1px solid #e0e6ef;background:#fff;\n      width:320px;\n    }\n\n    /* grid المنتجات */\n    .grid{\n      display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:var(--gap);\n      margin-top:10px;\n    }\n    .card{\n      background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 6px 18px rgba(6,18,45,.04);\n      display:flex;flex-direction:column;gap:10px;\n    }\n    .card .img{\n      height:160px;border-radius:10px;background:#f0f4fb;background-size:cover;background-position:center;\n    }\n    .card h3{margin:0;font-size:16px}\n    .card .price{font-weight:700;color:var(--accent)}\n    .row{display:flex;justify-content:space-between;align-items:center;gap:12px}\n    .muted{color:var(--muted);font-size:13px}\n\n    /* تفاصيل المنتج */\n    .detail{\n      display:flex;gap:18px;align-items:flex-start;\n    }\n    .detail .left{flex:1}\n    .detail .right{flex:1;min-width:280px}\n    .detail img{max-width:100%;border-radius:10px;display:block}\n\n    /* نموذج الإضافة */\n    form.add-form{display:flex;flex-direction:column;gap:10px;background:var(--card);padding:14px;border-radius:12px}\n    form.add-form input, form.add-form textarea, form.add-form select{\n      padding:10px;border-radius:8px;border:1px solid #e6edf6;background:#fff;width:100%;\n    }\n\n    footer{margin-top:30px;color:var(--muted);font-size:14px;text-align:center}\n    @media (max-width:600px){\n      header{flex-direction:column;align-items:flex-start;gap:10px}\n      .search{width:100%}\n      .detail{flex-direction:column}\n    }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <header>\n      <h1>Product_Store</h1>\n      <div class=\"controls\">\n        <form method=\"get\" action=\"/\" style=\"display:inline;\">\n          <input name=\"q\" class=\"search\" placeholder=\"ابحث عن منتج...\" value=\"",
+      "line": 1
+    },
+    {
+      "node": "VarNode",
+      "expression": "request.args.get('q','')",
+      "line": 88
+    },
+    {
+      "node": "TextNode",
+      "text": "\" />\n        </form>\n        <a href=\"/add\" class=\"btn\">Add_Products</a>\n      </div>\n    </header>\n\n\n    ",
+      "line": 88
+    },
+    {
+      "node": "IfNode",
+      "condition": "product",
+      "thenBody": {
+        "node": "JinjaProgram",
+        "children": [
+          {
+            "node": "TextNode",
+            "text": "\n      <section class=\"card\">\n        <div class=\"detail\">\n          <div class=\"left\">\n            <img src=\"",
+            "line": 95
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.image",
+            "line": 99
+          },
+          {
+            "node": "TextNode",
+            "text": "\" alt=\"",
+            "line": 99
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.name",
+            "line": 99
+          },
+          {
+            "node": "TextNode",
+            "text": "\" />\n            <h2 style=\"margin-top:12px\">",
+            "line": 99
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.name",
+            "line": 100
+          },
+          {
+            "node": "TextNode",
+            "text": "</h2>\n            <p class=\"muted\">price: <span class=\"price\">",
+            "line": 100
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.price",
+            "line": 101
+          },
+          {
+            "node": "TextNode",
+            "text": " </span></p>\n            <p class=\"muted\">ID : ",
+            "line": 101
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.id",
+            "line": 102
+          },
+          {
+            "node": "TextNode",
+            "text": "</p>\n          </div>\n          <div class=\"right\">\n            <h3>Description</h3>\n            <p>",
+            "line": 102
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.description or \"No description\"",
+            "line": 106
+          },
+          {
+            "node": "TextNode",
+            "text": "</p>\n            <div style=\"margin-top:12px\">\n              <a href=\"/\" class=\"btn secondary\">Back to Products </a>\n                <form method=\"post\"\n                      action=\"",
+            "line": 106
+          },
+          {
+            "node": "VarNode",
+            "expression": "url_for('delete_product', pid=product.id)",
+            "line": 110
+          },
+          {
+            "node": "TextNode",
+            "text": "\"\n                      onsubmit=\"return confirm('هل أنت متأكد من حذف هذا المنتج؟');\"\n                      style=\"display:inline;\">\n                    <button type=\"submit\" class=\"btn\" style=\"background:#c53030\">\n                        Delete Product\n                    </button>\n                </form>\n            </div>\n          </div>\n        </div>\n      </section>\n    ",
+            "line": 110
+          }
+        ],
+        "line": 95
+      },
+      "elseBody": {
+        "node": "JinjaProgram",
+        "children": [
+          {
+            "node": "IfNode",
+            "condition": "show_add",
+            "thenBody": {
+              "node": "JinjaProgram",
+              "children": [
+                {
+                  "node": "TextNode",
+                  "text": "\n\n      <section class=\"card\">\n        <h2>Add Products</h2>\n        <form class=\"add-form\" method=\"post\" action=\"/add\">\n          <label>Products name</label>\n          <input name=\"name\" required />\n          <label>Price</label>\n          <input name=\"price\" type=\"number\" step=\"0.01\" required />\n          <label>Photo</label>\n          <input name=\"image\" placeholder=\"https://...\" />\n          <label>Description</label>\n          <textarea name=\"description\" rows=\"4\"></textarea>\n          <div style=\"display:flex;gap:10px;justify-content:flex-end\">\n            <a href=\"/\" class=\"btn secondary\">Cancel</a>\n            <button class=\"btn\" type=\"submit\">Add product</button>\n          </div>\n        </form>\n      </section>\n    ",
+                  "line": 121
+                }
+              ],
+              "line": 121
+            },
+            "elseBody": {
+              "node": "JinjaProgram",
+              "children": [
+                {
+                  "node": "TextNode",
+                  "text": "\n\n      <section class=\"grid\">\n        ",
+                  "line": 140
+                },
+                {
+                  "node": "ForNode",
+                  "body": {
+                    "node": "JinjaProgram",
+                    "children": [
+                      {
+                        "node": "TextNode",
+                        "text": "\n          <article class=\"card\">\n            <div class=\"img\" style=\"background-image:url('",
+                        "line": 143
+                      },
+                      {
+                        "node": "VarNode",
+                        "expression": "p.image or 'https://via.placeholder.com/400x300?text=No+Image'",
+                        "line": 145
+                      },
+                      {
+                        "node": "TextNode",
+                        "text": "')\"></div>\n            <h3>",
+                        "line": 145
+                      },
+                      {
+                        "node": "VarNode",
+                        "expression": "p.name",
+                        "line": 146
+                      },
+                      {
+                        "node": "TextNode",
+                        "text": "</h3>\n            <div class=\"row\">\n              <div class=\"muted\">ID: ",
+                        "line": 146
+                      },
+                      {
+                        "node": "VarNode",
+                        "expression": "p.id",
+                        "line": 148
+                      },
+                      {
+                        "node": "TextNode",
+                        "text": "</div>\n              <div class=\"price\">",
+                        "line": 148
+                      },
+                      {
+                        "node": "VarNode",
+                        "expression": "p.price",
+                        "line": 149
+                      },
+                      {
+                        "node": "TextNode",
+                        "text": "</div>\n            </div>\n            <p class=\"muted\" style=\"min-height:40px\">",
+                        "line": 149
+                      },
+                      {
+                        "node": "VarNode",
+                        "expression": "(p.description[:90] ~ (\"...\" if p.description|length>90 else \"\")) if p.description else \"\"",
+                        "line": 151
+                      },
+                      {
+                        "node": "TextNode",
+                        "text": "</p>\n            <div style=\"display:flex;gap:8px;justify-content:flex-end;margin-top:auto\">\n              <a href=\"/product/",
+                        "line": 151
+                      },
+                      {
+                        "node": "VarNode",
+                        "expression": "p.id",
+                        "line": 153
+                      },
+                      {
+                        "node": "TextNode",
+                        "text": "\" class=\"btn secondary\">Description</a>\n            </div>\n          </article>\n\n        ",
+                        "line": 153
+                      }
+                    ],
+                    "line": 143
+                  },
+                  "iterableExpr": "products",
+                  "elseBody": {
+                    "node": "JinjaProgram",
+                    "children": [
+                      {
+                        "node": "TextNode",
+                        "text": "\n          <div class=\"card\">No Products <a href=\"/add\" class=\"btn\" style=\"margin-left:10px\">Add first product</a></div>\n        ",
+                        "line": 157
+                      }
+                    ],
+                    "line": 157
+                  },
+                  "loopVar": "p",
+                  "line": 143
+                },
+                {
+                  "node": "TextNode",
+                  "text": "\n      </section>\n    ",
+                  "line": 159
+                }
+              ],
+              "line": 140
+            },
+            "line": 121
+          }
+        ],
+        "line": 0
+      },
+      "line": 95
+    },
+    {
+      "node": "TextNode",
+      "text": "\n\n\n  </div>\n</body>\n</html>\n",
+      "line": 161
+    }
+  ],
+  "line": 1
+}

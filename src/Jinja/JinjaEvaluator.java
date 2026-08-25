@@ -12,6 +12,18 @@ public class JinjaEvaluator {
         expr = expr.trim();
         if (expr.isEmpty()) return null;
 
+        // `left or right` fallback (e.g. `product.description or "No description"`) -
+        // only the top-level " or " matters here, so a plain split is enough for the
+        // dotted-path / literal expressions this evaluator otherwise supports.
+        int orIdx = expr.indexOf(" or ");
+        if (orIdx >= 0) {
+            Object left = resolve(expr.substring(0, orIdx), context);
+            if (isTruthy(left)) return left;
+            return resolve(expr.substring(orIdx + 4), context);
+        }
+
+        if (isQuoted(expr)) return expr.substring(1, expr.length() - 1);
+
         String[] parts = expr.split("\\.");
         Object current = context.get(parts[0]);
         for (int i = 1; i < parts.length && current != null; i++) {
@@ -22,6 +34,12 @@ public class JinjaEvaluator {
             }
         }
         return current;
+    }
+
+    private static boolean isQuoted(String s) {
+        return s.length() >= 2
+                && ((s.charAt(0) == '"' && s.charAt(s.length() - 1) == '"')
+                || (s.charAt(0) == '\'' && s.charAt(s.length() - 1) == '\''));
     }
 
     public static boolean isTruthy(Object value) {

@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "كرسي مريح",
+    "price": 79.99,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/Set_of_fourteen_side_chairs_MET_DP110780.jpg/500px-Set_of_fourteen_side_chairs_MET_DP110780.jpg",
+    "description": "كرسي مريح مناسِب للمكتب."
+  },
+  {
+    "id": 2,
+    "name": "طاولة خشب",
+    "price": 149.0,
+    "image": "https://encrypted-tbn2.gstatic.com/shopping?q=tbn:ANd9GcREqqprzLosTn5-bkBAYDZMxka4rx4JcaR8u_iuJDpQylO5wQ17lrXlzlpV8jDHKLkJnW4xYZjxGsoMHvHQARpmH11FkWAKwItijs9tdHUc",
+    "description": "طاولة طعام من خشب البلوط."
+  }
+]

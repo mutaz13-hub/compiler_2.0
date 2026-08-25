@@ -111,11 +111,16 @@ public class JinjaParser {
      * token itself is NOT consumed - the caller inspects it.
      */
     private JinjaProgram parseBlock(String[] stopAtAny) {
+        return parseBlock(stopAtAny, false);
+    }
+
+    private JinjaProgram parseBlock(String[] stopAtAny, boolean stopAtElif) {
         JinjaProgram program = new JinjaProgram();
         while (pos < tokens.size()) {
             Tok tok = tokens.get(pos);
-            if (tok.type == TokType.STMT && stopAtAny != null && matchesAny(tok.content, stopAtAny)) {
-                break;
+            if (tok.type == TokType.STMT) {
+                if (stopAtAny != null && matchesAny(tok.content, stopAtAny)) break;
+                if (stopAtElif && tok.content.startsWith("elif ")) break;
             }
             program.setLine(program.getChildren().isEmpty() ? tok.line : program.getLine());
             if (tok.type == TokType.TEXT) {
@@ -168,16 +173,35 @@ public class JinjaParser {
         Tok ifTok = tokens.get(pos);
         pos++; // consume "if ..."
         String condition = ifTok.content.substring(3).trim();
+        return parseIfTail(condition, ifTok.line);
+    }
 
-        JinjaProgram thenBody = parseBlock(new String[]{"else", "endif"});
+    /**
+     * Parses the body of an if/elif/else chain. `{% elif cond %}` is
+     * represented as a nested IfNode inside the elseBody, so an
+     * `if / elif / elif / else / endif` chain matching real Jinja2
+     * semantics comes out as ordinary nested if-else without any change
+     * to IfNode or its render()/print() logic.
+     */
+    private IfNode parseIfTail(String condition, int line) {
+        JinjaProgram thenBody = parseBlock(new String[]{"else", "endif"}, true);
         JinjaProgram elseBody = null;
-        if (pos < tokens.size() && tokens.get(pos).content.equals("else")) {
-            pos++; // consume "else"
-            elseBody = parseBlock(new String[]{"endif"});
+        if (pos < tokens.size()) {
+            Tok tok = tokens.get(pos);
+            if (tok.content.equals("else")) {
+                pos++; // consume "else"
+                elseBody = parseBlock(new String[]{"endif"});
+            } else if (tok.content.startsWith("elif ")) {
+                pos++; // consume "elif ..."
+                IfNode nested = parseIfTail(tok.content.substring(5).trim(), tok.line);
+                elseBody = new JinjaProgram();
+                elseBody.addChild(nested);
+                return new IfNode(condition, thenBody, elseBody, line); // endif consumed by the innermost parseIfTail
+            }
         }
         if (pos < tokens.size() && tokens.get(pos).content.equals("endif")) {
             pos++; // consume "endif"
         }
-        return new IfNode(condition, thenBody, elseBody, ifTok.line);
+        return new IfNode(condition, thenBody, elseBody, line);
     }
 }

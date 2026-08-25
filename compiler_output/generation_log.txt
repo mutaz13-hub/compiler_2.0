@@ -1,0 +1,16 @@
+Generation started.
+Parsed Python file: test\app.py
+Python semantic analysis: 3 error(s).
+Loaded 2 product(s) from test\products_data.json
+Parsed Jinja/HTML template: test\products.html
+product_detail.html rendered using the first product as a representative example (static generation has no per-URL routing).
+Rendered index (products grid) -> output/index.html (4 semantic error(s))
+Rendered product_detail -> output/product_detail.html (3 semantic error(s))
+Rendered add_product (form) -> output/add_product.html (3 semantic error(s))
+Copied test\app.py -> output/app.py (unmodified)
+Copied test\products.html -> output/products.html (unmodified)
+Copied test\products_data.json -> output/products_data.json (unmodified)
+Wrote compiler_output/ast_python.json
+Wrote compiler_output/ast_jinja.json
+Wrote compiler_output/semantic_report.txt
+Generation finished.

@@ -6,10 +6,7 @@ import antlrHTML.HTMLParser;
 import antlrPython.*;
 import Visitor.PythonVisitor;
 import Visitor.PythonSemanticAnalyzer;
-import Visitor.HTMLVisitor;
 import Visitor.HTMLSemanticAnalyzer;
-import Generator.PythonCodeGenerator;
-import Generator.HTMLCodeGenerator;
 import AST.HTML.HtmlDocumentNode;
 import AST.Python.Program;
 import SymbolTable.SemanticError;
@@ -18,7 +15,6 @@ import Jinja.JinjaParser;
 import Jinja.JinjaProgram;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.tree.ParseTree;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -26,12 +22,13 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
-import java.io.PrintWriter;
 
 public class Main {
 
@@ -52,7 +49,7 @@ public class Main {
      * up with a message that shows exactly what was tried.
      */
     private static File resolveInputFile(String typedPath) {
-        List<File> candidates = new java.util.ArrayList<>();
+        List<File> candidates = new ArrayList<>();
         candidates.add(new File(typedPath));
 
         try {
@@ -87,8 +84,7 @@ public class Main {
 
     public static void main(String[] args) throws IOException {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("you want Python or HTML or Full Pipeline (Python data -> Jinja -> HTML) or CSS or Generate Full Site");
-        System.out.println("1:Python" + "\n" + "2:HTML" + "\n" + "3:Full Pipeline" + "\n" + "4:CSS" + "\n" + "5:Generate Full Site");
+        System.out.println("1: Python Semantic Check" + "\n" + "2: HTML + Jinja + CSS Semantic Check" + "\n" + "3: Code Generation (Full Site)");
         int chose = 0;
         if (scanner.hasNextInt()) {
             chose = scanner.nextInt();
@@ -111,7 +107,7 @@ public class Main {
             System.out.println(program);
             pythonVisitor.getSymbolTable().printTable();
 
-            System.out.println("\n--- Semantic Analysis ---");
+            System.out.println("\n--- Semantic Analysis (Python) ---");
             PythonSemanticAnalyzer analyzer = new PythonSemanticAnalyzer();
             analyzer.analyze(program);
             List<SemanticError> errors = analyzer.getErrors();
@@ -123,136 +119,86 @@ public class Main {
                     System.out.println(error);
                 }
             }
-
-            System.out.println("\n--- Code Generation ---");
-            PythonCodeGenerator generator = new PythonCodeGenerator();
-            generator.generate(program);
-            String generatedCode = generator.getGeneratedCode();
-            System.out.println("Generated Python Code:");
-            System.out.println("-----------------------");
-            System.out.println(generatedCode);
-            System.out.println("-----------------------");
-            
-            System.out.println("Do you want to save the generated code? (y/n)");
-            if (scanner.nextLine().equalsIgnoreCase("y")) {
-                try (FileWriter writer = new FileWriter("generated_app.py")) {
-                    writer.write(generatedCode);
-                    System.out.println("Code saved to generated_app.py");
-                }
-            }
         }
         else if (chose == 2) {
-            System.out.println("Enter HTML file path (default: test/products.html):");
+            System.out.println("Enter HTML/Jinja file path (default: test/products.html):");
             String source = scanner.nextLine().trim();
             if (source.isEmpty()) source = "test/products.html";
             File htmlFile = resolveInputFile(source);
+
+            // --- HTML ---
             CharStream charStream = CharStreams.fromFileName(htmlFile.getPath());
             HTMLLexer htmlLexer = new HTMLLexer(charStream);
             CommonTokenStream commonTokenStream = new CommonTokenStream(htmlLexer);
             HTMLParser htmlParser = new HTMLParser(commonTokenStream);
-
             HTMLVisitor htmlVisitor = new HTMLVisitor();
+            HtmlDocumentNode htmlDoc = (HtmlDocumentNode) htmlVisitor.visit(htmlParser.htmlDocument());
 
-            HtmlDocumentNode program = (HtmlDocumentNode) htmlVisitor.visit(htmlParser.htmlDocument());
-
-            System.out.println(program);
+            System.out.println(htmlDoc);
             htmlVisitor.getSymbolTable().printTable();
 
-            System.out.println("\n--- Semantic Analysis ---");
-            HTMLSemanticAnalyzer analyzer = new HTMLSemanticAnalyzer();
-            analyzer.analyze(program);
-            List<SemanticError> errors = analyzer.getErrors();
-            if (errors.isEmpty()) {
+            System.out.println("\n--- Semantic Analysis (HTML) ---");
+            HTMLSemanticAnalyzer htmlAnalyzer = new HTMLSemanticAnalyzer();
+            htmlAnalyzer.analyze(htmlDoc);
+            List<SemanticError> htmlErrors = htmlAnalyzer.getErrors();
+            if (htmlErrors.isEmpty()) {
                 System.out.println("No semantic errors found.");
             } else {
-                System.out.println("Found " + errors.size() + " semantic error(s):");
-                for (SemanticError error : errors) {
-                    System.out.println(error);
-                }
+                System.out.println("Found " + htmlErrors.size() + " semantic error(s):");
+                for (SemanticError error : htmlErrors) System.out.println(error);
             }
 
-            System.out.println("\n--- Code Generation ---");
-            HTMLCodeGenerator generator = new HTMLCodeGenerator();
-            generator.generate(program);
-            String generatedCode = generator.getGeneratedCode();
-            System.out.println("Generated HTML Code:");
-            System.out.println("-----------------------");
-            System.out.println(generatedCode);
-            System.out.println("-----------------------");
-
-            System.out.println("Do you want to save the generated code? (y/n)");
-            if (scanner.nextLine().equalsIgnoreCase("y")) {
-                try (FileWriter writer = new FileWriter("generated_page.html")) {
-                    writer.write(generatedCode);
-                    System.out.println("Code saved to generated_page.html");
-                }
+            // --- CSS: any <style> blocks embedded in the HTML ---
+            List<AST.HTML.StyleNode> styleNodes = new ArrayList<>();
+            for (AST.HTML.Program el : htmlDoc.getElements()) {
+                collectStyleNodes(el, styleNodes);
             }
-        }
-        else if (chose == 3) {
-            // Full pipeline: Flask/Python data file -> Python AST -> extracted
-            // data -> Jinja template -> Jinja AST -> rendered HTML written to
-            // output/, matching the project's required architecture
-            // (Python data array fed into the Jinja tree, per the assignment
-            // brief and the team's pipeline diagram).
-            System.out.println("Enter Python data file path (default: test/simple_products.py):");
-            String pySource = scanner.nextLine().trim();
-            if (pySource.isEmpty()) pySource = "test/simple_products.py";
 
-            System.out.println("Enter Jinja template path (default: templates/index.jinja):");
-            String jinjaSource = scanner.nextLine().trim();
-            if (jinjaSource.isEmpty()) jinjaSource = "templates/index.jinja";
-
-            // --- Stage 1: Python file -> Python AST (reusing the existing pipeline) ---
-            File pyDataFile = resolveInputFile(pySource);
-            CharStream charStream = CharStreams.fromFileName(pyDataFile.getPath());
-            PythonLexer pythonLexer = new PythonLexer(charStream);
-            CommonTokenStream commonTokenStream = new CommonTokenStream(pythonLexer);
-            PythonParser pythonParser = new PythonParser(commonTokenStream);
-            PythonVisitor pythonVisitor = new PythonVisitor();
-            Program program = (Program) pythonVisitor.visit(pythonParser.root());
-
-            System.out.println("\n--- Python AST ---");
-            System.out.println(program);
-
-            System.out.println("\n--- Semantic Analysis (Python) ---");
-            PythonSemanticAnalyzer pyAnalyzer = new PythonSemanticAnalyzer();
-            pyAnalyzer.analyze(program);
-            List<SemanticError> pyErrors = pyAnalyzer.getErrors();
-            if (pyErrors.isEmpty()) {
-                System.out.println("No semantic errors found.");
+            System.out.println("\n--- Semantic Analysis (CSS) ---");
+            if (styleNodes.isEmpty()) {
+                System.out.println("No embedded <style> blocks found.");
             } else {
-                System.out.println("Found " + pyErrors.size() + " semantic error(s):");
-                for (SemanticError error : pyErrors) System.out.println(error);
-            }
+                int i = 1;
+                for (AST.HTML.StyleNode styleNode : styleNodes) {
+                    System.out.println("[style block " + i + " of " + styleNodes.size() + "]");
+                    String cssBody = stripStyleTags(styleNode.getBody());
+                    try {
+                        CharStream cssCharStream = CharStreams.fromString(cssBody);
+                        antlrCSS.CSSLexer cssLexer = new antlrCSS.CSSLexer(cssCharStream);
+                        CommonTokenStream cssTokens = new CommonTokenStream(cssLexer);
+                        antlrCSS.CSSParser cssParser = new antlrCSS.CSSParser(cssTokens);
+                        Visitor.CSSVisitor cssVisitor = new Visitor.CSSVisitor();
+                        AST.CSS.CSSProgram cssProgram = cssVisitor.visitProgram(cssParser.stylesheet());
 
-            // --- Stage 2: extract literal data from the Python AST ("Python VM" step) ---
-            PythonDataExtractor extractor = new PythonDataExtractor();
-            extractor.extract(program);
-            Map<String, Object> data = extractor.getGlobals();
-
-            System.out.println("\n--- Extracted Data (passed into the Jinja tree) ---");
-            if (data.isEmpty()) {
-                System.out.println("(no top-level literal assignments found)");
-            } else {
-                for (Map.Entry<String, Object> e : data.entrySet()) {
-                    System.out.println("  " + e.getKey() + " = " + e.getValue());
+                        Visitor.CSSSemanticAnalyzer cssAnalyzer = new Visitor.CSSSemanticAnalyzer();
+                        cssAnalyzer.analyze(cssProgram);
+                        List<SemanticError> cssErrors = cssAnalyzer.getErrors();
+                        if (cssErrors.isEmpty()) {
+                            System.out.println("No semantic errors found.");
+                        } else {
+                            for (SemanticError error : cssErrors) System.out.println(error);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Could not parse this <style> block: " + e.getMessage());
+                    }
+                    i++;
                 }
             }
 
-            // --- Stage 3: Jinja template -> Jinja AST ---
-            File jinjaFile = resolveInputFile(jinjaSource);
-            String templateText = new String(Files.readAllBytes(jinjaFile.toPath()));
+            // --- Jinja: the file's {{ }} / {% %} tags, checked against real
+            // data when a sibling products_data.json is available ---
+            System.out.println("\n--- Semantic Analysis (Jinja) ---");
+            String templateText = new String(Files.readAllBytes(htmlFile.toPath()), StandardCharsets.UTF_8);
             JinjaParser jinjaParser = new JinjaParser();
             JinjaProgram jinjaProgram = jinjaParser.parse(templateText);
 
-            System.out.println("\n--- Jinja AST ---");
-            jinjaProgram.print(0);
+            Map<String, Object> jinjaContext = new HashMap<>();
+            jinjaContext.put("products", loadProductsJsonNear(htmlFile, null));
+            jinjaContext.put("product", null);
+            jinjaContext.put("show_add", false);
 
-            // --- Stage 3.5: semantic analysis on the Jinja AST, checked
-            // against the real data extracted from Python ---
-            System.out.println("\n--- Semantic Analysis (Jinja) ---");
             Visitor.JinjaSemanticAnalyzer jinjaAnalyzer = new Visitor.JinjaSemanticAnalyzer();
-            jinjaAnalyzer.analyze(jinjaProgram, data);
+            jinjaAnalyzer.analyze(jinjaProgram, jinjaContext);
             List<SemanticError> jinjaErrors = jinjaAnalyzer.getErrors();
             if (jinjaErrors.isEmpty()) {
                 System.out.println("No semantic errors found.");
@@ -260,161 +206,212 @@ public class Main {
                 System.out.println("Found " + jinjaErrors.size() + " semantic error(s):");
                 for (SemanticError error : jinjaErrors) System.out.println(error);
             }
-            jinjaAnalyzer.getSymbolTable().printTable();
-
-            // --- Stage 4: render Jinja AST against the extracted data -> HTML ---
-            StringBuilder rendered = new StringBuilder();
-            jinjaProgram.render(data, rendered);
-
-            new File("output").mkdirs();
-            String outName = "output/" + baseName(jinjaSource) + ".html";
-            try (FileWriter writer = new FileWriter(outName)) {
-                writer.write(rendered.toString());
-            }
-
-            System.out.println("\n--- Rendered HTML ---");
-            System.out.println("-----------------------");
-            System.out.println(rendered.toString());
-            System.out.println("-----------------------");
-            System.out.println("Saved to " + outName);
         }
-        else if (chose == 4) {
-            System.out.println("Enter CSS file path (default: test/style.css):");
-            String source = scanner.nextLine().trim();
-            if (source.isEmpty()) source = "test/style.css";
-            File cssFile = resolveInputFile(source);
+        else if (chose == 3) {
+            // Generates a working static site from a Flask app.py + its
+            // products.html template (which has {% if/elif/else %} +
+            // {% for %} Jinja blocks mixed directly into the HTML, rendered
+            // via render_template_string at runtime instead of separate
+            // template files):
+            //   output/            <- index.html, product_detail.html,
+            //                         add_product.html (generated, one per
+            //                         real Flask route) + app.py,
+            //                         products.html, products_data.json
+            //                         (copied verbatim so the real Flask
+            //                         app keeps working unmodified)
+            //   compiler_output/   <- ast_python.json, ast_jinja.json,
+            //                         semantic_report.txt, generation_log.txt
+            List<String> log = new ArrayList<>();
+            log.add("Generation started.");
 
-            org.antlr.v4.runtime.CharStream cssCharStream = CharStreams.fromFileName(cssFile.getPath());
-            antlrCSS.CSSLexer cssLexer = new antlrCSS.CSSLexer(cssCharStream);
-            CommonTokenStream cssTokens = new CommonTokenStream(cssLexer);
-            antlrCSS.CSSParser cssParser = new antlrCSS.CSSParser(cssTokens);
-
-            Visitor.CSSVisitor cssVisitor = new Visitor.CSSVisitor();
-            AST.CSS.CSSProgram cssProgram = cssVisitor.visitProgram(cssParser.stylesheet());
-
-            System.out.println("\n--- CSS AST ---");
-            System.out.println(cssProgram);
-
-            SymbolTable.CSSSymbolTable cssSymbolTable = new SymbolTable.CSSSymbolTable();
-            cssSymbolTable.build(cssProgram);
-            cssSymbolTable.printTable();
-
-            System.out.println("\n--- Semantic Analysis (CSS) ---");
-            Visitor.CSSSemanticAnalyzer cssAnalyzer = new Visitor.CSSSemanticAnalyzer();
-            cssAnalyzer.analyze(cssProgram);
-            List<SemanticError> cssErrors = cssAnalyzer.getErrors();
-            if (cssErrors.isEmpty()) {
-                System.out.println("No semantic errors found.");
-            } else {
-                System.out.println("Found " + cssErrors.size() + " semantic error(s):");
-                for (SemanticError error : cssErrors) System.out.println(error);
-            }
-        }
-        else if (chose == 5) {
-            // Generates the full multi-page site the project requires:
-            // list / add / view / edit / delete pages, all cross-linked by
-            // real hrefs, driven entirely by the products list extracted
-            // from the Python data file.
-            System.out.println("Enter Python data file path (default: test/webapp_products.py):");
+            System.out.println("Enter Python (Flask) file path (default: test/app.py):");
             String pySource = scanner.nextLine().trim();
-            if (pySource.isEmpty()) pySource = "test/webapp_products.py";
+            if (pySource.isEmpty()) pySource = "test/app.py";
 
-            File pyDataFile = resolveInputFile(pySource);
-            CharStream siteCharStream = CharStreams.fromFileName(pyDataFile.getPath());
-            PythonLexer siteLexer = new PythonLexer(siteCharStream);
-            CommonTokenStream siteTokens = new CommonTokenStream(siteLexer);
-            PythonParser siteParser = new PythonParser(siteTokens);
-            PythonVisitor sitePyVisitor = new PythonVisitor();
-            Program siteProgram = (Program) sitePyVisitor.visit(siteParser.root());
+            System.out.println("Enter HTML/Jinja template file path (default: test/products.html):");
+            String htmlSource = scanner.nextLine().trim();
+            if (htmlSource.isEmpty()) htmlSource = "test/products.html";
 
-            PythonDataExtractor siteExtractor = new PythonDataExtractor();
-            siteExtractor.extract(siteProgram);
-            Map<String, Object> siteData = siteExtractor.getGlobals();
+            File pyFile = resolveInputFile(pySource);
+            File templateFile = resolveInputFile(htmlSource);
 
-            Object productsObj = siteData.get("products");
-            Object siteTitleObj = siteData.get("site_title");
-            String siteTitle = siteTitleObj != null ? String.valueOf(siteTitleObj) : "My Shop";
-            @SuppressWarnings("unchecked")
-            List<Object> products = (productsObj instanceof List) ? (List<Object>) productsObj : new java.util.ArrayList<>();
+            // --- Python: parse + semantic analysis (report only - does not block generation) ---
+            CharStream pyCharStream = CharStreams.fromFileName(pyFile.getPath());
+            PythonLexer pyLexer = new PythonLexer(pyCharStream);
+            CommonTokenStream pyTokens = new CommonTokenStream(pyLexer);
+            PythonParser pyParser = new PythonParser(pyTokens);
+            PythonVisitor pyVisitor = new PythonVisitor();
+            Program pyProgram = (Program) pyVisitor.visit(pyParser.root());
+            log.add("Parsed Python file: " + pyFile.getPath());
+
+            PythonSemanticAnalyzer pyAnalyzer = new PythonSemanticAnalyzer();
+            pyAnalyzer.analyze(pyProgram);
+            log.add("Python semantic analysis: " + pyAnalyzer.getErrors().size() + " error(s).");
+
+            // --- Data: products_data.json next to the Python file is the
+            // real data this Flask app serves at runtime (app.py reads it
+            // via load_products()); fall back to a top-level literal
+            // Python assignment (e.g. webapp_products.py-style files) if
+            // there's no JSON file to read. ---
+            List<Object> products = loadProductsJsonNear(pyFile, log);
+            if (products.isEmpty()) {
+                PythonDataExtractor extractor = new PythonDataExtractor();
+                extractor.extract(pyProgram);
+                Object literalProducts = extractor.getGlobals().get("products");
+                if (literalProducts instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<Object> asList = (List<Object>) literalProducts;
+                    products = asList;
+                    log.add("No usable products_data.json - fell back to a literal 'products' assignment found in " + pyFile.getPath());
+                }
+            }
+
+            // --- Jinja: parse the template once, render it against 3
+            // different contexts matching the 3 real Flask routes that
+            // serve this template (index, product_detail, add_product). ---
+            String templateText = new String(Files.readAllBytes(templateFile.toPath()), StandardCharsets.UTF_8);
+            JinjaParser jinjaParser = new JinjaParser();
+            JinjaProgram jinjaTree = jinjaParser.parse(templateText);
+            log.add("Parsed Jinja/HTML template: " + templateFile.getPath());
+
+            Map<String, Object> indexContext = new HashMap<>();
+            indexContext.put("products", products);
+            indexContext.put("product", null);
+            indexContext.put("show_add", false);
+
+            Map<String, Object> detailContext = new HashMap<>();
+            detailContext.put("products", new ArrayList<>());
+            detailContext.put("show_add", false);
+            if (!products.isEmpty()) {
+                detailContext.put("product", products.get(0));
+                log.add("product_detail.html rendered using the first product as a representative example (static generation has no per-URL routing).");
+            } else {
+                detailContext.put("product", null);
+                log.add("WARNING: no products available - product_detail.html rendered with no 'product' in context.");
+            }
+
+            Map<String, Object> addContext = new HashMap<>();
+            addContext.put("products", new ArrayList<>());
+            addContext.put("product", null);
+            addContext.put("show_add", true);
 
             new File("output").mkdirs();
-            int pagesWritten = 0;
+            new File("compiler_output").mkdirs();
 
-            // index.html - list page
-            Map<String, Object> indexContext = new java.util.HashMap<>();
-            indexContext.put("products", products);
-            indexContext.put("site_title", siteTitle);
-            writeRenderedPage("templates/index.jinja", indexContext, "output/index.html");
-            pagesWritten++;
-
-            // add_product.html - static form page (no product-specific data needed)
-            Map<String, Object> addContext = new java.util.HashMap<>();
-            addContext.put("site_title", siteTitle);
-            writeRenderedPage("templates/add_product.jinja", addContext, "output/add_product.html");
-            pagesWritten++;
-
-            // one view/edit/delete page per product
-            for (Object p : products) {
-                if (!(p instanceof Map)) continue;
-                Map<String, Object> perProductContext = new java.util.HashMap<>();
-                perProductContext.put("product", p);
-                perProductContext.put("site_title", siteTitle);
-                Object idObj = ((Map<?, ?>) p).get("id");
-                String id = idObj != null ? String.valueOf(idObj) : "0";
-
-                writeRenderedPage("templates/product_detail.jinja", perProductContext, "output/product_" + id + ".html");
-                writeRenderedPage("templates/edit_product.jinja", perProductContext, "output/edit_" + id + ".html");
-                writeRenderedPage("templates/delete_confirm.jinja", perProductContext, "output/delete_" + id + ".html");
-                pagesWritten += 3;
+            StringBuilder semanticReport = new StringBuilder();
+            semanticReport.append("=== Python Semantic Analysis (").append(pyFile.getPath()).append(") ===\n");
+            if (pyAnalyzer.getErrors().isEmpty()) {
+                semanticReport.append("No semantic errors found.\n");
+            } else {
+                for (SemanticError e : pyAnalyzer.getErrors()) semanticReport.append(e).append("\n");
             }
 
-            // copy style.css alongside the generated pages so the <link> tags resolve
-            try {
-                File cssSrc = resolveInputFile("test/style.css");
-                Files.copy(cssSrc.toPath(), new File("output/style.css").toPath(),
-                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            } catch (Exception e) {
-                System.out.println("(note: test/style.css not found - pages will render without styling)");
+            renderPage(jinjaTree, indexContext, "output/index.html", "index (products grid)", semanticReport, log);
+            renderPage(jinjaTree, detailContext, "output/product_detail.html", "product_detail", semanticReport, log);
+            renderPage(jinjaTree, addContext, "output/add_product.html", "add_product (form)", semanticReport, log);
+
+            // --- Companion files that keep the real Flask app runnable, copied verbatim ---
+            copyCompanionFile(pyFile.getPath(), "output/" + pyFile.getName(), log);
+            copyCompanionFile(templateFile.getPath(), "output/" + templateFile.getName(), log);
+            File dataFile = new File(pyFile.getParentFile() != null ? pyFile.getParentFile() : new File("."), "products_data.json");
+            if (dataFile.isFile()) {
+                copyCompanionFile(dataFile.getPath(), "output/products_data.json", log);
             }
 
-            System.out.println("\nGenerated " + pagesWritten + " page(s) in output/:");
-            System.out.println("  - output/index.html");
-            System.out.println("  - output/add_product.html");
-            for (Object p : products) {
-                if (!(p instanceof Map)) continue;
-                Object idObj = ((Map<?, ?>) p).get("id");
-                String id = idObj != null ? String.valueOf(idObj) : "0";
-                System.out.println("  - output/product_" + id + ".html (view)");
-                System.out.println("  - output/edit_" + id + ".html (edit)");
-                System.out.println("  - output/delete_" + id + ".html (delete confirm)");
+            // --- compiler_output/: analysis + generation artifacts ---
+            String pythonAstJson = Util.JsonExporter.toJson(pyProgram);
+            try (FileWriter w = new FileWriter("compiler_output/ast_python.json")) { w.write(pythonAstJson); }
+            log.add("Wrote compiler_output/ast_python.json");
+
+            String jinjaAstJson = Util.JsonExporter.toJson(jinjaTree);
+            try (FileWriter w = new FileWriter("compiler_output/ast_jinja.json")) { w.write(jinjaAstJson); }
+            log.add("Wrote compiler_output/ast_jinja.json");
+
+            try (FileWriter w = new FileWriter("compiler_output/semantic_report.txt")) { w.write(semanticReport.toString()); }
+            log.add("Wrote compiler_output/semantic_report.txt");
+
+            try (FileWriter w = new FileWriter("compiler_output/generation_log.txt")) {
+                for (String entry : log) w.write(entry + "\n");
+                w.write("Generation finished.\n");
             }
-            System.out.println("\nOpen output/index.html in a browser and click through - every link points to a real generated page.");
+
+            System.out.println("\nGenerated:");
+            System.out.println("  output/index.html, output/product_detail.html, output/add_product.html");
+            System.out.println("  output/" + pyFile.getName() + ", output/" + templateFile.getName()
+                    + (dataFile.isFile() ? ", output/products_data.json" : "") + " (copied, unmodified)");
+            System.out.println("  compiler_output/ast_python.json, ast_jinja.json, semantic_report.txt, generation_log.txt");
+            System.out.println("\nTo run the real site: cd output && python " + pyFile.getName());
         }
     }
 
-    /** Parses + semantically checks + renders one Jinja template against `context`, writing the result to `outPath`. */
-    private static void writeRenderedPage(String templatePath, Map<String, Object> context, String outPath) throws IOException {
-        File templateFile = resolveInputFile(templatePath);
-        String templateText = new String(Files.readAllBytes(templateFile.toPath()));
-        JinjaParser parser = new JinjaParser();
-        JinjaProgram program = parser.parse(templateText);
-
+    /** Parses one Jinja/HTML template once and renders it against N different contexts (see below) - this call handles one context. */
+    private static void renderPage(JinjaProgram tree, Map<String, Object> context, String outPath, String label, StringBuilder semanticReport, List<String> log) throws IOException {
         Visitor.JinjaSemanticAnalyzer analyzer = new Visitor.JinjaSemanticAnalyzer();
-        analyzer.analyze(program, context);
-        for (SemanticError error : analyzer.getErrors()) {
-            System.out.println("  [" + outPath + "] " + error);
+        analyzer.analyze(tree, context);
+        semanticReport.append("\n=== Jinja Semantic Analysis (").append(label).append(" -> ").append(outPath).append(") ===\n");
+        if (analyzer.getErrors().isEmpty()) {
+            semanticReport.append("No semantic errors found.\n");
+        } else {
+            for (SemanticError e : analyzer.getErrors()) semanticReport.append(e).append("\n");
         }
 
         StringBuilder rendered = new StringBuilder();
-        program.render(context, rendered);
+        tree.render(context, rendered);
         try (FileWriter writer = new FileWriter(outPath)) {
             writer.write(rendered.toString());
         }
+        log.add("Rendered " + label + " -> " + outPath + " (" + analyzer.getErrors().size() + " semantic error(s))");
     }
 
-    private static String baseName(String path) {
-        String name = new File(path).getName();
-        int dot = name.lastIndexOf('.');
-        return dot > 0 ? name.substring(0, dot) : name;
+    /** Recursively collects every <style> block nested anywhere in the HTML element tree. */
+    private static void collectStyleNodes(AST.HTML.Program node, List<AST.HTML.StyleNode> out) {
+        if (node instanceof AST.HTML.StyleNode) {
+            out.add((AST.HTML.StyleNode) node);
+        } else if (node instanceof AST.HTML.TagElementNode) {
+            for (AST.HTML.Program child : ((AST.HTML.TagElementNode) node).getChildren()) {
+                collectStyleNodes(child, out);
+            }
+        }
+    }
+
+    /** A StyleNode's body is the raw text of the whole `<style ...> ... </style>` element; strip the tags so what's left is parseable CSS. */
+    private static String stripStyleTags(String raw) {
+        String body = raw.replaceFirst("(?is)^<style[^>]*>", "");
+        body = body.replaceFirst("(?is)</style>\\s*$", "");
+        return body;
+    }
+
+    /** Loads a sibling products_data.json (same directory as anchorFile) into a list of Java objects, or an empty list if it's missing/unreadable. */
+    private static List<Object> loadProductsJsonNear(File anchorFile, List<String> log) {
+        File dir = anchorFile.getParentFile();
+        File jsonFile = new File(dir != null ? dir : new File("."), "products_data.json");
+        if (!jsonFile.isFile()) {
+            if (log != null) log.add("No products_data.json found next to " + anchorFile.getPath() + " - using an empty product list.");
+            return new ArrayList<>();
+        }
+        try {
+            String text = new String(Files.readAllBytes(jsonFile.toPath()), StandardCharsets.UTF_8);
+            Object parsed = Util.SimpleJsonParser.parse(text);
+            if (parsed instanceof List) {
+                @SuppressWarnings("unchecked")
+                List<Object> list = (List<Object>) parsed;
+                if (log != null) log.add("Loaded " + list.size() + " product(s) from " + jsonFile.getPath());
+                return list;
+            }
+        } catch (Exception e) {
+            if (log != null) log.add("WARNING: failed to parse " + jsonFile.getPath() + " (" + e.getMessage() + ") - using an empty product list.");
+        }
+        return new ArrayList<>();
+    }
+
+    /** Copies a file byte-for-byte with no processing - companion files aren't analyzed or generated, just kept working. */
+    private static void copyCompanionFile(String srcPath, String destPath, List<String> log) {
+        try {
+            File src = resolveInputFile(srcPath);
+            Files.copy(src.toPath(), new File(destPath).toPath(), java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            log.add("Copied " + srcPath + " -> " + destPath + " (unmodified)");
+        } catch (Exception e) {
+            log.add("WARNING: could not copy " + srcPath + " -> " + destPath + " (" + e.getMessage() + ")");
+        }
     }
 }

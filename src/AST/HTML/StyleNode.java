@@ -8,6 +8,10 @@ public class StyleNode extends HtmlElementNode {
         this.body = body;
     }
 
+    public String getBody() {
+        return body;
+    }
+
     @Override
     public String toString(int level) {
 
