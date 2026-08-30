@@ -5,10 +5,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
-/**
- * محرك توليد الكود للـ HTML (HTML Code Generator)
- * المسؤول عن تحويل شجرة الـ AST إلى مستند HTML
- */
+
 public class HTMLCodeGenerator {
     private final StringWriter stringWriter = new StringWriter();
     private final PrintWriter emit = new PrintWriter(stringWriter);

@@ -7,16 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * Basic semantic checks for CSS. Scoped modestly (this project's semantic-
- * error requirement is specifically for the Python and Jinja ASTs - "كلا
- * الجزئين" - CSS isn't required to hit the same 5-error bar), but these two
- * checks are genuinely useful and cheap to add given the grammar/AST/symbol
- * table already exist:
- *   1) duplicate property inside the same rule (last one silently wins in
- *      real CSS, which is a common source of real bugs)
- *   2) an empty rule block (dead code smell)
- */
+
 public class CSSSemanticAnalyzer {
     private final List<SemanticError> errors = new ArrayList<>();
 

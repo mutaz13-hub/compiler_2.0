@@ -78,16 +78,7 @@ public class HTMLVisitor extends HTMLParserBaseVisitor<Program> {
 
             HTMLParser.HtmlContentContext content = ctx.htmlContent();
 
-            // NOTE: we must walk content.children() in original parse-tree
-            // order and dispatch by type, rather than looping over
-            // content.htmlChardata()/.htmlElement()/.htmlComment()
-            // separately. Those typed accessors each return only the
-            // matches of that one type, still in relative order among
-            // themselves, but the three lists are not merged back together
-            // in document order. That silently reordered any content where
-            // text, elements, and comments are interleaved (e.g. a Jinja
-            // {% for %} tag sitting between two <article> elements) so that
-            // all text came first, then all elements, then all comments.
+            
             if (content.children != null) {
                 for (org.antlr.v4.runtime.tree.ParseTree childNode : content.children) {
                     Program child = null;

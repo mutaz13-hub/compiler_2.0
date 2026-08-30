@@ -5,18 +5,15 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 
-/**
- * محرك توليد الكود للبايثون (Python Code Generator)
- * المسؤول عن تحويل شجرة الـ AST إلى كود برمي جاهز للتنفيذ
- */
+
+
 public class PythonCodeGenerator {
     private final StringWriter stringWriter = new StringWriter();
     private final PrintWriter emit = new PrintWriter(stringWriter);
     private int indentLevel = 0;
 
-    /**
-     * دالة التوليد الأساسية التي تمر على عقد الشجرة
-     */
+   
+   
     public void generate(Program program) {
         if (program == null || program.getStmts() == null) {
             throw new IllegalArgumentException("شجرة الـ AST فارغة! لا يمكن توليد الكود.");
@@ -59,7 +56,7 @@ public class PythonCodeGenerator {
         } else if (node instanceof Decorated) {
             emitDecorated((Decorated) node);
         } else {
-            // Fallback for unknown nodes
+           
             printIndent();
             emit.println("# Unknown node: " + node.getClass().getSimpleName());
             printIndent();
@@ -305,12 +302,8 @@ public class PythonCodeGenerator {
         } else if (node instanceof NoneAtom) {
             emit.print("None");
         } else if (node instanceof ListAtom) {
-            // NOTE: Atom extends AtomExpr (inheritance, same pitfall as
-            // Comparison extends Test above), so ListAtom/DictAtom instances
-            // also pass `instanceof AtomExpr`. Since that check appears
-            // further down, it MUST be listed after these more specific
-            // checks, or it silently swallows list/dict atoms by reading
-            // their inherited-but-unset `atom`/`trailers` fields.
+            
+            
             emit.print("[");
             Testlist_comp tc = ((ListAtom) node).getTestlist_comp();
             if (tc != null) emitExpr(tc);
@@ -342,12 +335,8 @@ public class PythonCodeGenerator {
             emit.print(" " + (add.getOp() == AdditiveExpr.BinaryOp.PLUS ? "+" : "-") + " ");
             emitExpr(add.getRight());
         } else if (node instanceof Comparison) {
-            // NOTE: Comparison extends Test, so this check MUST come before
-            // the `instanceof Test` branch below, or every Comparison node
-            // gets silently swallowed by the Test branch (it inherits Test's
-            // empty `comparison`/`test` fields, which were never populated
-            // for a Comparison instance, so nothing gets emitted).
-            Comparison c = (Comparison) node;
+            
+            
             List<Expr> exprs = c.getExprs();
             List<Comparison.CompOp> ops = c.getOps();
             for (int i = 0; i < exprs.size(); i++) {

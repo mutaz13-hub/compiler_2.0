@@ -28,24 +28,24 @@ public class HTMLSemanticAnalyzer {
             TagElementNode tag = (TagElementNode) node;
             String tagName = tag.getTagName().toLowerCase();
 
-            // 1. Check for Deprecated Tags
+           
             if (DEPRECATED_TAGS.contains(tagName)) {
                 errors.add(new SemanticError(SemanticError.ErrorType.DEPRECATED_TAG,
                     "Deprecated tag used: <" + tagName + ">", tag.getLine()));
             }
 
-            // 2. Check for Duplicate IDs and Required Attributes
+           
             checkAttributes(tag);
 
-            // 3. Check for Invalid Nesting
+           
             checkNesting(tag);
 
-            // 4. Check for Empty Title
+            
             if (tagName.equals("title")) {
                 checkEmptyTitle(tag);
             }
 
-            // Recursively analyze children
+            
             for (Program child : tag.getChildren()) {
                 analyzeNode(child);
             }
@@ -62,7 +62,7 @@ public class HTMLSemanticAnalyzer {
             String name = attr.getName().toLowerCase();
             String value = attr.getValue();
 
-            // Duplicate ID check
+            
             if (name.equals("id") && value != null) {
                 // Remove quotes from value if present
                 String idValue = value.replace("\"", "").replace("'", "");
@@ -78,7 +78,7 @@ public class HTMLSemanticAnalyzer {
             if (name.equals("href")) hasHref = true;
         }
 
-        // Required Attribute checks
+        
         if (tagName.equals("img")) {
             if (!hasSrc) {
                 errors.add(new SemanticError(SemanticError.ErrorType.MISSING_REQUIRED_ATTRIBUTE,
@@ -103,13 +103,13 @@ public class HTMLSemanticAnalyzer {
                 TagElementNode childTag = (TagElementNode) child;
                 String childName = childTag.getTagName().toLowerCase();
 
-                // <a> cannot contain <a>
+        
                 if (tagName.equals("a") && childName.equals("a")) {
                     errors.add(new SemanticError(SemanticError.ErrorType.INVALID_NESTING,
                         "Invalid nesting: <a> tag cannot contain another <a> tag", childTag.getLine()));
                 }
 
-                // <ul>/ <ol> can only contain <li>
+        
                 if ((tagName.equals("ul") || tagName.equals("ol")) && !childName.equals("li")) {
                      errors.add(new SemanticError(SemanticError.ErrorType.INVALID_NESTING,
                         "Invalid nesting: <" + tagName + "> can only contain <li> tags, but found <" + childName + ">", childTag.getLine()));
