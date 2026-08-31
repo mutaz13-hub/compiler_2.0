@@ -416,10 +416,7 @@ import SymbolTable.PythonSymbolTable;
                 DictItem item = new DictItem();
                 item.setLine(ictx.getStart().getLine());
                 String rawKey = ictx.STRING() != null ? ictx.STRING().getText() : ictx.name().getText();
-                // STRING token text includes the surrounding quote characters
-                // (e.g. "\"name\""); strip them here so the key is stored
-                // consistently unquoted, and toString()/codegen re-add quotes
-                // once instead of doubling them up.
+
                 if (rawKey.length() >= 2 && (rawKey.startsWith("\"") || rawKey.startsWith("'"))) {
                     rawKey = rawKey.substring(1, rawKey.length() - 1);
                 }
