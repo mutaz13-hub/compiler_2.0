@@ -92,20 +92,11 @@ public class PythonSemanticAnalyzer {
         } else if (node instanceof For_stmt) {
             For_stmt forStmt = (For_stmt) node;
             symbolTable.enter("for_loop");
-            // Define loop variables
-            // Simplified: just analyze children
+
             analyzeNode(forStmt.getSuite());
             symbolTable.exit();
         } else if (node instanceof With_stmt) {
-            // NOTE: `with` blocks were previously not analyzed at all (no
-            // branch existed here), so any variable assigned inside a
-            // `with ... as f:` block (very common for file I/O, e.g.
-            // `TEMPLATE_STR = f.read()`) never made it into the symbol
-            // table, and later legitimate uses of it were incorrectly
-            // flagged as UNDEFINED_VARIABLE. Unlike function bodies, a
-            // `with` block does not introduce a new scope in real Python,
-            // so we deliberately do NOT call symbolTable.enter()/exit()
-            // here - the body is analyzed directly in the enclosing scope.
+
             With_stmt withStmt = (With_stmt) node;
             for (With_item item : withStmt.getItems()) {
                 if (item.getTest() != null) analyzeNode(item.getTest());
@@ -132,17 +123,14 @@ public class PythonSemanticAnalyzer {
             
             for (int i = 0; i < exprs.size(); i++) {
                 if (i < ops.size() && ops.get(i) == Comparison.CompOp.EQ) {
-                    // exprs.get(i) is a target of assignment
                     String varName = getRawName(exprs.get(i));
                     String rightType = (i + 1 < exprs.size()) ? inferType(exprs.get(i+1)) : "unknown";
                     checkAssignment(varName, rightType, comp.getLine());
                     symbolTable.define(varName, "variable", rightType, varName, comp.getLine());
-                    // We don't call analyzeNode(exprs.get(i)) because it's being defined here
                 } else if (i > 0 && ops.get(i-1) == Comparison.CompOp.EQ) {
-                    // exprs.get(i) is a value being assigned
+
                     analyzeNode(exprs.get(i));
                 } else {
-                    // Regular expression usage
                     analyzeNode(exprs.get(i));
                 }
             }
@@ -183,7 +171,7 @@ public class PythonSemanticAnalyzer {
                 analyzeNode(t);
             }
         }
-        // ... recursive checks for other nodes
+
     }
 
     private String getRawName(Root node) {
