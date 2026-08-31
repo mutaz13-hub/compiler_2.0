@@ -5,28 +5,6 @@ import SymbolTable.JinjaSymbolTable;
 import SymbolTable.SemanticError;
 import java.util.*;
 
-/**
- * Semantic analysis for the Jinja AST, walked against the data map that
- * PythonDataExtractor produced from the Python side - this is exactly
- * where "the generator passes Python data into the Jinja tree" becomes
- * checkable, not just renderable: real values from the Python side (not
- * just names) are used to catch real mistakes. Implements five semantic
- * error types, mirroring the five required on the Python side:
- *
- *   1) UNDEFINED_TEMPLATE_VARIABLE - {{ x }} / {% if x %} / {% for _ in x %}
- *      references a base name that isn't in scope (neither passed-in data
- *      nor an enclosing loop variable).
- *   2) FOR_NOT_ITERABLE - {% for x in y %} where y is a *known* top-level
- *      data key whose actual extracted value isn't a list (e.g. a string
- *      or number) - checked against real data, not just a name guess.
- *   3) INVALID_ATTRIBUTE_ACCESS - `product.price` where `product` is a
- *      loop variable over real list-of-dict data, but `price` never
- *      appears as a key on any dict in that list.
- *   4) EMPTY_LOOP_BODY - a {% for %} whose body has no VarNode / nested
- *      for / nested if / non-blank text at all - a near-certain mistake.
- *   5) DUPLICATE_LOOP_VARIABLE - a nested {% for %} reusing the same loop
- *      variable name as an enclosing {% for %}, silently shadowing it.
- */
 public class JinjaSemanticAnalyzer {
     private final JinjaSymbolTable symbolTable = new JinjaSymbolTable();
     private final List<SemanticError> errors = new ArrayList<>();
@@ -142,7 +120,6 @@ public class JinjaSemanticAnalyzer {
         return true;
     }
 
-    /** Checks both the base name (Check 1) and, for `x.attr`, the attribute against known shape (Check 3). */
     private void checkExpression(String expression, int line) {
         if (expression == null || expression.trim().isEmpty()) return;
         String[] parts = expression.trim().split("\\.");
