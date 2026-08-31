@@ -19,104 +19,12 @@
     {
       "node": "IfNode",
       "condition": "product",
-      "thenBody": {
-        "node": "JinjaProgram",
-        "children": [
-          {
-            "node": "TextNode",
-            "text": "\n      <section class=\"card\">\n        <div class=\"detail\">\n          <div class=\"left\">\n            <img src=\"",
-            "line": 95
-          },
-          {
-            "node": "VarNode",
-            "expression": "product.image",
-            "line": 99
-          },
-          {
-            "node": "TextNode",
-            "text": "\" alt=\"",
-            "line": 99
-          },
-          {
-            "node": "VarNode",
-            "expression": "product.name",
-            "line": 99
-          },
-          {
-            "node": "TextNode",
-            "text": "\" />\n            <h2 style=\"margin-top:12px\">",
-            "line": 99
-          },
-          {
-            "node": "VarNode",
-            "expression": "product.name",
-            "line": 100
-          },
-          {
-            "node": "TextNode",
-            "text": "</h2>\n            <p class=\"muted\">price: <span class=\"price\">",
-            "line": 100
-          },
-          {
-            "node": "VarNode",
-            "expression": "product.price",
-            "line": 101
-          },
-          {
-            "node": "TextNode",
-            "text": " </span></p>\n            <p class=\"muted\">ID : ",
-            "line": 101
-          },
-          {
-            "node": "VarNode",
-            "expression": "product.id",
-            "line": 102
-          },
-          {
-            "node": "TextNode",
-            "text": "</p>\n          </div>\n          <div class=\"right\">\n            <h3>Description</h3>\n            <p>",
-            "line": 102
-          },
-          {
-            "node": "VarNode",
-            "expression": "product.description or \"No description\"",
-            "line": 106
-          },
-          {
-            "node": "TextNode",
-            "text": "</p>\n            <div style=\"margin-top:12px\">\n              <a href=\"/\" class=\"btn secondary\">Back to Products </a>\n                <form method=\"post\"\n                      action=\"",
-            "line": 106
-          },
-          {
-            "node": "VarNode",
-            "expression": "url_for('delete_product', pid=product.id)",
-            "line": 110
-          },
-          {
-            "node": "TextNode",
-            "text": "\"\n                      onsubmit=\"return confirm('هل أنت متأكد من حذف هذا المنتج؟');\"\n                      style=\"display:inline;\">\n                    <button type=\"submit\" class=\"btn\" style=\"background:#c53030\">\n                        Delete Product\n                    </button>\n                </form>\n            </div>\n          </div>\n        </div>\n      </section>\n    ",
-            "line": 110
-          }
-        ],
-        "line": 95
-      },
       "elseBody": {
         "node": "JinjaProgram",
         "children": [
           {
             "node": "IfNode",
             "condition": "show_add",
-            "thenBody": {
-              "node": "JinjaProgram",
-              "children": [
-                {
-                  "node": "TextNode",
-                  "text": "\n\n      <section class=\"card\">\n        <h2>Add Products</h2>\n        <form class=\"add-form\" method=\"post\" action=\"/add\">\n          <label>Products name</label>\n          <input name=\"name\" required />\n          <label>Price</label>\n          <input name=\"price\" type=\"number\" step=\"0.01\" required />\n          <label>Photo</label>\n          <input name=\"image\" placeholder=\"https://...\" />\n          <label>Description</label>\n          <textarea name=\"description\" rows=\"4\"></textarea>\n          <div style=\"display:flex;gap:10px;justify-content:flex-end\">\n            <a href=\"/\" class=\"btn secondary\">Cancel</a>\n            <button class=\"btn\" type=\"submit\">Add product</button>\n          </div>\n        </form>\n      </section>\n    ",
-                  "line": 121
-                }
-              ],
-              "line": 121
-            },
             "elseBody": {
               "node": "JinjaProgram",
               "children": [
@@ -221,10 +129,102 @@
               ],
               "line": 140
             },
+            "thenBody": {
+              "node": "JinjaProgram",
+              "children": [
+                {
+                  "node": "TextNode",
+                  "text": "\n\n      <section class=\"card\">\n        <h2>Add Products</h2>\n        <form class=\"add-form\" method=\"post\" action=\"/add\">\n          <label>Products name</label>\n          <input name=\"name\" required />\n          <label>Price</label>\n          <input name=\"price\" type=\"number\" step=\"0.01\" required />\n          <label>Photo</label>\n          <input name=\"image\" placeholder=\"https://...\" />\n          <label>Description</label>\n          <textarea name=\"description\" rows=\"4\"></textarea>\n          <div style=\"display:flex;gap:10px;justify-content:flex-end\">\n            <a href=\"/\" class=\"btn secondary\">Cancel</a>\n            <button class=\"btn\" type=\"submit\">Add product</button>\n          </div>\n        </form>\n      </section>\n    ",
+                  "line": 121
+                }
+              ],
+              "line": 121
+            },
             "line": 121
           }
         ],
         "line": 0
+      },
+      "thenBody": {
+        "node": "JinjaProgram",
+        "children": [
+          {
+            "node": "TextNode",
+            "text": "\n      <section class=\"card\">\n        <div class=\"detail\">\n          <div class=\"left\">\n            <img src=\"",
+            "line": 95
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.image",
+            "line": 99
+          },
+          {
+            "node": "TextNode",
+            "text": "\" alt=\"",
+            "line": 99
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.name",
+            "line": 99
+          },
+          {
+            "node": "TextNode",
+            "text": "\" />\n            <h2 style=\"margin-top:12px\">",
+            "line": 99
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.name",
+            "line": 100
+          },
+          {
+            "node": "TextNode",
+            "text": "</h2>\n            <p class=\"muted\">price: <span class=\"price\">",
+            "line": 100
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.price",
+            "line": 101
+          },
+          {
+            "node": "TextNode",
+            "text": " </span></p>\n            <p class=\"muted\">ID : ",
+            "line": 101
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.id",
+            "line": 102
+          },
+          {
+            "node": "TextNode",
+            "text": "</p>\n          </div>\n          <div class=\"right\">\n            <h3>Description</h3>\n            <p>",
+            "line": 102
+          },
+          {
+            "node": "VarNode",
+            "expression": "product.description or \"No description\"",
+            "line": 106
+          },
+          {
+            "node": "TextNode",
+            "text": "</p>\n            <div style=\"margin-top:12px\">\n              <a href=\"/\" class=\"btn secondary\">Back to Products </a>\n                <form method=\"post\"\n                      action=\"",
+            "line": 106
+          },
+          {
+            "node": "VarNode",
+            "expression": "url_for('delete_product', pid=product.id)",
+            "line": 110
+          },
+          {
+            "node": "TextNode",
+            "text": "\"\n                      onsubmit=\"return confirm('هل أنت متأكد من حذف هذا المنتج؟');\"\n                      style=\"display:inline;\">\n                    <button type=\"submit\" class=\"btn\" style=\"background:#c53030\">\n                        Delete Product\n                    </button>\n                </form>\n            </div>\n          </div>\n        </div>\n      </section>\n    ",
+            "line": 110
+          }
+        ],
+        "line": 95
       },
       "line": 95
     },

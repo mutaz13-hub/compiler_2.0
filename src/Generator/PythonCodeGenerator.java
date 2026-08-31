@@ -335,8 +335,8 @@ public class PythonCodeGenerator {
             emit.print(" " + (add.getOp() == AdditiveExpr.BinaryOp.PLUS ? "+" : "-") + " ");
             emitExpr(add.getRight());
         } else if (node instanceof Comparison) {
-            
-            
+
+            Comparison c = (Comparison) node;
             List<Expr> exprs = c.getExprs();
             List<Comparison.CompOp> ops = c.getOps();
             for (int i = 0; i < exprs.size(); i++) {
